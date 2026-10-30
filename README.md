@@ -28,9 +28,9 @@ The full network-by-network comparison is in **[docs/NETWORK-PARITY.md](docs/NET
 | Favorites, recent, resume | **VERIFIED (1.2.0 build)** | Persisted across reload; storage keys unchanged |
 | M3U import | **VERIFIED (automated + on-device search/lineup)** | Parser tests pass; an imported list rendered on the TV. URL import depends on the source's CORS policy |
 | 1.3.0 IPK | **VERIFIED** | 35,846 bytes; 18 entries; app id/version/resolution valid; no secrets. SHA-256 `43a7777f…` |
-| GitHub repository + release | **VERIFIED after publication** | `nnabdelshahid/FreeWave-LiveTV`, release `v1.3.0`; readback is recorded in [VERIFICATION.md](docs/VERIFICATION.md) |
-| GitHub Actions CI | **BLOCKED** | Account-level runner start failure (`runner_id: 0`, no steps); the same pipeline passes locally (49/49) |
-| Pull request | **BLOCKED (open)** | The 1.3.0 pull request cannot satisfy required checks while Actions cannot start |
+| GitHub repository + release | **VERIFIED** | [v1.3.0](https://github.com/nnabdelshahid/FreeWave-LiveTV/releases/tag/v1.3.0); asset 35,846 bytes, SHA-256 `43a7777f…`; downloaded again and matched byte-for-byte |
+| GitHub Actions CI | **BLOCKED** | Runs `41013905317` (PR) and `41013861357` (branch) failed with `runner_id: 0`, no steps; the same pipeline passes locally (49/49) |
+| Pull request | **BLOCKED (open)** | [PR #3](https://github.com/nnabdelshahid/FreeWave-LiveTV/pull/3) is mergeable but `UNSTABLE`; required checks cannot start |
 
 The 1.0.0 and 1.2.0 packages are superseded. The 1.2.0 remote-control repair — deterministic launch focus, visible focus, explicit OK activation, single Back model, field escape, focus restoration, and diagnostics — is retained in 1.3.0.
 

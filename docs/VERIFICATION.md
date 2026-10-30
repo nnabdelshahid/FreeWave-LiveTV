@@ -393,6 +393,34 @@ The 300-channel target is **BLOCKED** by distribution rights and provider endpoi
 
 `docs/screenshots/12-lineup-1.3.0.png` was captured from the running app after the final state probe and cropped to the 1280×720 app canvas. It shows the 13-channel count, the `FREE LIVE` labels, and CBS Sports HQ selected. The hardware video plane is not composited into DevTools captures, so the video region may appear blank/white; playback evidence is the measured state above.
 
-## 23. GitHub delivery
+## 23. GitHub delivery readback
 
-See the readback appended after publication. The release asset must hash to `43a7777fa19a835796af904a97d07869c0598490a208e4cb0f597c6f74665706` before this section is marked VERIFIED.
+| Item | Value |
+| --- | --- |
+| Repository | https://github.com/nnabdelshahid/FreeWave-LiveTV |
+| Branch | `feat/legal-lineup-1.3.0` |
+| Release commit | `fdcde6daf3f1409fec7043578d5efdf118f257f6` |
+| Tag | `v1.3.0` annotated tag `1dc9e90b0d1bee9ddc175dabd61af2a43a94c431`, dereferences to `fdcde6d` |
+| Pull request | https://github.com/nnabdelshahid/FreeWave-LiveTV/pull/3 |
+| PR state | `OPEN`, `MERGEABLE`, `UNSTABLE` |
+| Release | https://github.com/nnabdelshahid/FreeWave-LiveTV/releases/tag/v1.3.0 |
+| Asset | `com.nader.freewavelive_1.3.0_all.ipk`, 35,846 bytes |
+| GitHub asset digest | `sha256:43a7777fa19a835796af904a97d07869c0598490a208e4cb0f597c6f74665706` |
+| Re-download hash | `43a7777fa19a835796af904a97d07869c0598490a208e4cb0f597c6f74665706` — matched the installed package |
+| Branch CI | Run `41013861357` failed with `runner_id: 0`, `runner_name: ""`, `steps: []` |
+| PR CI | Run `41013905317` failed the same way; no checkout or test step executed |
+| Release workflow | Run `41013864313` also failed at runner start with zero steps |
+| Merge | **BLOCKED** — required checks cannot start; not merged |
+
+The release tag remains on `fdcde6d`. A later docs-only commit records this readback on the branch; it does not change the released IPK. The asset was downloaded with `gh release download v1.3.0` and independently hashed against the installed file.
+
+## 24. Final status summary
+
+| Area | Status |
+| --- | --- |
+| 13-channel lineup, 1.3.0 package, install, TV render | **VERIFIED** |
+| Remote-control repair retained and device-input tested | **VERIFIED** |
+| GitHub release and asset readback | **VERIFIED** |
+| GitHub Actions and PR merge | **BLOCKED** (account-level runner start) |
+| Exact free premium networks / 300-channel target | **BLOCKED** (rights and provider policy) |
+| Audible sound, physical remote, 15-minute soak, real URL imports | **NOT TESTED** |

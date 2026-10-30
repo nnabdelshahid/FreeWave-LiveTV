@@ -58,6 +58,8 @@ One key, `freewave.live.v1`, stores:
 - A channel key is `tvg-id|url` (or `name|url` when no id), so the same stream imported twice deduplicates.
 - Saves are wrapped in `try/catch`; a full quota shows a user-facing message instead of breaking playback.
 - Version 1.0 state loads unchanged; missing fields get defaults.
+- The bundled `starter-public` source is refreshed on launch from the packaged lineup. Imported sources, favorites, recent, guide, and preferences are untouched, so upgrading from 1.2.0 replaces the old 9-channel bundle with the current 13.
+- Each channel may carry `access: "FREE LIVE"`, displayed in the row. It describes a public broadcaster feed, not a paid network.
 - Last channel, favorites, recent list, and guide survive relaunch (verified on device).
 
 ## Playback

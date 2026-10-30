@@ -2,7 +2,7 @@
 
 Verified on an **LG 24LQ520S-PU**, webOS 22 (`sdkVersion 7.6.0`, firmware `04.60.92`), using an existing Developer Mode pairing.
 
-Package: `com.nader.freewavelive_1.2.0_all.ipk`
+Package: `com.nader.freewavelive_1.3.0_all.ipk`
 
 ## 1. Keep Developer Mode active
 
@@ -20,7 +20,7 @@ Note the TV's IP address from that screen. Do not reuse an IP from an old sessio
 1. Install [webOS Dev Manager](https://github.com/webosbrew/dev-manager-desktop/releases/latest).
 2. **Add Device** → enter the TV IP, port `9922`, user `prisoner`.
 3. Pair with the Key Server passphrase shown on the TV.
-4. Open the TV's **Apps** view → **Install** → select `com.nader.freewavelive_1.2.0_all.ipk`.
+4. Open the TV's **Apps** view → **Install** → select `com.nader.freewavelive_1.3.0_all.ipk`.
 5. Launch **FreeWave Live TV** from the installed app list.
 
 ## 3. Option B — official CLI
@@ -28,7 +28,7 @@ Note the TV's IP address from that screen. Do not reuse an IP from an old sessio
 ```bash
 npm install -g @webos-tools/cli
 ares-setup-device            # add the TV: host, port 9922, user prisoner, passphrase
-ares-install -d "Office TV" com.nader.freewavelive_1.2.0_all.ipk
+ares-install -d "Office TV" com.nader.freewavelive_1.3.0_all.ipk
 ares-launch  -d "Office TV" com.nader.freewavelive
 ares-install -d "Office TV" -l   # confirm com.nader.freewavelive is listed
 ```
@@ -45,7 +45,7 @@ The verified install used exactly this flow and returned `Success`.
 - In Setup, **Down** leaves a text field instead of trapping focus. The field’s **Left/Right** remain caret movement.
 - Setup → Diagnostics → **Show remote diagnostics overlay** displays the key code, action, focus, screen, and handled state. Leave it off for normal viewing.
 
-Upgrading from 1.1.0 keeps the app id `com.nader.freewavelive`, so compatible favorites, recent channels, guide, and preferences remain. The package is unsigned and requires Developer Mode.
+Upgrading from 1.2.0 keeps the app id `com.nader.freewavelive`. The app replaces only its bundled starter source, so imported playlists, favorites, recent channels, guide data, and preferences remain. The package is unsigned and requires Developer Mode.
 
 ## 5. Logs and debugging
 
@@ -56,7 +56,7 @@ ares-inspect -d "Office TV" com.nader.freewavelive
 Open the printed DevTools URL to see console output. Playback statistics are logged as:
 
 ```text
-[freewave] stats {"version":"1.2.0","channel":"CGTN English","readyState":4,...}
+[freewave] stats {"version":"1.3.0","channel":"CGTN English","readyState":4,...}
 ```
 
 ## 6. Uninstall

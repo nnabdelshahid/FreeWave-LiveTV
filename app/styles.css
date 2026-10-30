@@ -178,6 +178,7 @@ h1 { margin: 5px 0 2px; font-size: 25px; font-weight: 650; letter-spacing: -.03e
 .channel-description { overflow: hidden; margin-top: 4px; color: #8597a7; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .channel-tags { display: flex; align-items: center; gap: 6px; margin-top: 5px; color: #7890a2; font-size: 8px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .channel-tag { color: #8fa4b4; }
+.channel-access { color: var(--mint); }
 .channel-number-badge { min-width: 25px; color: #72889a; font-size: 9px; text-align: right; }
 .row-star { align-self: flex-start; padding-top: 2px; color: #697f90; font-size: 14px; }
 .row-star.is-favorite { color: var(--yellow); }

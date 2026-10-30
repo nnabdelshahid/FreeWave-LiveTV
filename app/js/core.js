@@ -92,6 +92,7 @@
         sourcePage: safeHttpUrl(attributes['source-page'], baseUrl) || '',
         rights: attributes['rights-note'] || '',
         verifiedAt: attributes['verified-at'] || '',
+        access: attributes['access-note'] || '',
         hlsNotes: attributes['hls-note'] || '',
         source: source
       });

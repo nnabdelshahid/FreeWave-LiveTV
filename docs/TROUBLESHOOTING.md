@@ -61,7 +61,7 @@ Guide refresh only runs when a guide **URL** is saved and the TV is online. Past
 Focus uses a mint outline and glow. Move with arrows; OK activates. If focus seems stuck in a dialog, press Back once.
 
 **Back exits the app**
-At the root screen Back arms exit and a second press exits (via `webOS.platformBack`). Inside the guide or settings, Back closes the dialog first.
+At the root screen one Back press exits via `webOS.platformBack()`. Inside the guide or settings, Back closes the dialog first and restores focus to the opener.
 
 **Typing in search moves focus**
 Arrow and letter handling is suppressed inside inputs so the on-screen keyboard works. Press Back to leave the field.

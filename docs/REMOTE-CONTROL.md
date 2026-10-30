@@ -1,6 +1,6 @@
 # Remote control and focus architecture
 
-FreeWave 1.2.0 repairs the remote-control path from the TV key event to the visible focus ring. The application id, layout, streams, M3U/XMLTV import, favorites, and persistence are unchanged.
+FreeWave 1.3.0 retains the 1.2.0 remote-control repair: the TV key event now reaches a visible, deterministic focus ring. The application id, layout, streams, M3U/XMLTV import, favorites, and persistence are unchanged.
 
 ## Status
 
@@ -143,9 +143,9 @@ Automated: `tests/remote-navigation.test.js` builds the real HTML in jsdom, stub
 - diagnostics key/focus/handling/screen values;
 - home Back calls the webOS platform API.
 
-Full pass: **48/48 tests**, lint clean.
+Full pass: **49/49 tests**, lint clean.
 
-On the TV, `ares-inspect` + Chromium `Input.dispatchKeyEvent` produced the results in [VERIFICATION.md](VERIFICATION.md). The installed package is `com.nader.freewavelive_1.2.0_all.ipk`, SHA-256 `1b1421a8039de067c830c36a04f372cedd0a763cbe1644c299d4ee1a2f058e9f`.
+On the TV, `ares-inspect` + Chromium `Input.dispatchKeyEvent` produced the results in [VERIFICATION.md](VERIFICATION.md). The final installed package is `com.nader.freewavelive_1.3.0_all.ipk`, SHA-256 `43a7777fa19a835796af904a97d07869c0598490a208e4cb0f597c6f74665706`; the remote behavior is unchanged from the 1.2.0 pass.
 
 ## Manual physical-remote acceptance
 

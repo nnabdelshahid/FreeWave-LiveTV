@@ -1,6 +1,6 @@
 # Stream compatibility
 
-Checked from a US network and on an **LG 24LQ520S-PU** (webOS 22, sdk 7.6.0, firmware 04.60.92) on 2026-10-29.
+Checked from a US network and on an **LG 24LQ520S-PU** (webOS 22, SDK 7.6.0, firmware 04.60.92) on 2026-10-29/30.
 
 ## What the TV supports
 
@@ -22,6 +22,10 @@ Measured facts:
 | Bloomberg US/EU | 0 | **Played**: 1280×720 |
 | Red Bull TV | 0 | **Played**: 320×180 |
 | Arirang TV | 0 | **Played**: 640×360 |
+| Al Jazeera Arabic | 0 | **Played**: 1280×720 |
+| FOX Weather | 0 | **Played**: 992×558 |
+| CBS Sports HQ | 0 | **Played**: 480×270 (final check) |
+| CBS Sports Golazo | 0 | **Played**: 480×270 |
 
 **Conclusion:** on this firmware, the tag alone does **not** break playback. It remains a documented compatibility risk for other models/firmware, and the app cannot remove tags from a broadcaster's manifest without a proxy (which would violate the zero-backend constraint). The tag is reported in diagnostics rather than treated as a fatal error.
 
@@ -29,20 +33,22 @@ Measured facts:
 
 | Check | Result |
 | --- | --- |
-| H.264 video | Host `ffprobe` confirms H.264 on all 9; TV decoded video on all 9 |
-| AAC audio | Host `ffprobe` confirms AAC on all 9; TV exposes 1 audio track per stream |
-| HLS master/media | 7 masters + 2 media playlists; all parsed by the app |
-| Segment retrieval | All 9 advanced `currentTime` on the TV for at least 6–9 s |
+| H.264 video | Host `ffprobe` confirms H.264 on all 13; TV decoded video on all 13 |
+| AAC audio | Host `ffprobe` confirms AAC on all 13; TV exposes 1 audio track per stream |
+| HLS master/media | Master and media manifests parsed; representations selected by the TV |
+| Segment retrieval | All 13 advanced `currentTime` on the TV |
 | TLS | All shipped URLs are HTTPS; certificates validated by the host and TV |
 | Redirects/content types | Followed by `verify-streams`; manifests served as HLS MIME types |
 | Encryption/DRM | No `EXT-X-KEY` other than `METHOD=NONE`; encrypted manifests are rejected by tests |
 | CORS | Not required for `<video>` playback. Playlist/guide **URL imports** do require permissive CORS; file/paste paths are the fallback |
-| A/V sync | Not instrumented; no drift observed during the 6–9 s per-channel checks |
+| A/V sync | Not instrumented; no drift observed during the per-channel checks |
 | Buffering/recovery | `waiting` shows a message; error path retries backup/primary per preferences |
 | Discontinuities | No `EXT-X-DISCONTINUITY` in shipped manifests on the check date |
 | Live edge | All feeds are live; no DVR seek UI is offered |
-| Startup latency | Most channels produced video within the 9 s sampling window; no precise startup metric is claimed |
+| Startup latency | Most channels produced video within the sampling window; no precise startup metric is claimed |
 | Memory | Not instrumented; the app loads one stream at a time and pauses on background |
+
+**NASA TV is not shipped.** Its host manifest passed, but the TV player raised media error 4. It was removed rather than left visible as a working channel.
 
 ## Audible audio
 

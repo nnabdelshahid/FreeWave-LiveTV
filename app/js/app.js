@@ -3,7 +3,7 @@
 
   const Core = window.FreewaveCore;
   const STORE_KEY = 'freewave.live.v1';
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.3.0';
   const $ = function (id) { return document.getElementById(id); };
   const el = {
     clock: $('clockLabel'), allCount: $('allCount'), favoriteCount: $('favoriteCount'), recentCount: $('recentCount'),
@@ -73,6 +73,7 @@
       sourcePage: channel.sourcePage || '',
       rights: channel.rights || '',
       verifiedAt: channel.verifiedAt || '',
+      access: channel.access || '',
       hlsNotes: channel.hlsNotes || '',
       source: channel.source || 'Saved playlist'
     };
@@ -143,6 +144,7 @@
           sourcePage: entry.sourcePage,
           rights: entry.rights,
           verifiedAt: entry.verifiedAt,
+          access: entry.access,
           hlsNotes: entry.hlsNotes,
           source: 'FreeWave verified lineup'
         });
@@ -156,6 +158,16 @@
     if (state.sources.length) return;
     const channels = starterChannels();
     if (channels.length) state.sources = [{ id: 'starter-public', name: 'FreeWave verified lineup', url: '', channels: channels }];
+  }
+
+  function syncStarterSource() {
+    const channels = starterChannels();
+    if (!channels.length) return;
+    const source = state.sources.find(function (item) { return item.id === 'starter-public'; }) ||
+      state.sources.find(function (item) { return !item.url && /FreeWave verified lineup/i.test(item.name); });
+    if (!source) return;
+    source.name = 'FreeWave verified lineup';
+    source.channels = channels;
   }
 
   function getAllChannels() {
@@ -206,7 +218,7 @@
 
   function groupDescription(channel) {
     const language = channel.language ? channel.language + ' · ' : '';
-    return language + (channel.group || 'Public') + ' · free live stream';
+    return language + (channel.group || 'Public') + ' · ' + (channel.access ? channel.access.toLowerCase() : 'free live stream');
   }
 
   function makeChannelRow(channel, position) {
@@ -234,6 +246,12 @@
     tag.className = 'channel-tag';
     tag.textContent = channel.group || 'Public';
     tags.appendChild(tag);
+    if (channel.access) {
+      const access = document.createElement('span');
+      access.className = 'channel-tag channel-access';
+      access.textContent = channel.access;
+      tags.appendChild(access);
+    }
     info.appendChild(name);
     info.appendChild(description);
     info.appendChild(tags);
@@ -1258,6 +1276,7 @@
   function initialize() {
     const hasSavedState = readSavedState();
     if (!hasSavedState || !state.sources.length) ensureStarterSource();
+    else syncStarterSource();
     state.channels = getAllChannels();
     syncPrefsUi();
     syncDiagnosticsUi();

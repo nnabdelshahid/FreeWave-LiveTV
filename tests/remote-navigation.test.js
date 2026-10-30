@@ -122,13 +122,14 @@ function closeApp(window) {
   window.__nativeClose();
 }
 
-async function createApp() {
+async function createApp(seed) {
   const dom = new JSDOM(html, { url: 'http://localhost/', runScripts: 'outside-only', pretendToBeVisual: true });
   await new Promise(function (resolve) {
     if (dom.window.document.readyState === 'complete') resolve();
     else dom.window.addEventListener('load', resolve, { once: true });
   });
   installBrowserStubs(dom.window);
+  if (seed) seed(dom.window);
   dom.window.eval(coreSource);
   dom.window.eval(starterSource);
   dom.window.eval(appSource);
@@ -318,6 +319,24 @@ test('diagnostics are hidden by default and report key, focus, screen and handli
     assert.match(window.document.getElementById('diagFocus').textContent, /channel-row/);
     assert.equal(window.document.getElementById('diagHandled').textContent, 'YES');
     assert.equal(window.document.getElementById('diagScreen').textContent, 'home');
+  } finally {
+    closeApp(window);
+  }
+});
+
+test('a saved starter source is migrated to the current verified lineup without touching user state', async function () {
+  const dom = await createApp(function (window) {
+    window.localStorage.setItem('freewave.live.v1', JSON.stringify({
+      sources: [{ id: 'starter-public', name: 'FreeWave verified lineup', url: '', channels: [{ key: 'old|https://old.example/live.m3u8', name: 'Old Starter', url: 'https://old.example/live.m3u8', group: 'News' }] }],
+      favorites: [], recent: [], prefs: { resume: false }, guide: { channels: {}, programs: {} }, lastKey: ''
+    }));
+  });
+  const window = dom.window;
+  try {
+    const rows = window.document.querySelectorAll('.channel-row');
+    assert.equal(rows.length, window.FREEWAVE_STARTER.channels.length);
+    assert.equal(window.document.querySelectorAll('.channel-access').length, window.FREEWAVE_STARTER.channels.length);
+    assert.equal(rows[0].querySelector('.channel-name').textContent, window.FREEWAVE_STARTER.channels[0].name);
   } finally {
     closeApp(window);
   }

@@ -22,7 +22,8 @@ test('channel manifest carries rights, availability, codec and verification evid
     assert.ok(channel.rights && channel.rights.length > 20, channel.name + ' needs rights evidence');
     assert.ok(channel.codecs, channel.name + ' needs codec evidence');
     assert.ok(channel.hlsNotes, channel.name + ' needs HLS notes');
-    assert.equal(channel.verifiedAt, '2026-10-29', channel.name + ' needs a validation date');
+    assert.match(channel.verifiedAt, /^2026-10-\d{2}$/, channel.name + ' needs a validation date');
+    assert.equal(channel.access, 'FREE LIVE', channel.name + ' needs a free-access label');
     assert.ok(channel.language && channel.country, channel.name + ' needs language and country');
     assert.ok(!ids.has(channel.tvgId), 'duplicate tvg-id ' + channel.tvgId);
     assert.ok(!numbers.has(channel.number), 'duplicate channel number ' + channel.number);
@@ -34,7 +35,7 @@ test('channel manifest carries rights, availability, codec and verification evid
 });
 
 test('channel manifest does not ship sources that failed validation', function () {
-  const blockedHosts = ['trt.com.tr', 'getaj.net', 'france24.com', 'nasa.gov', 'akamaized.net/hls/live/2014075'];
+  const blockedHosts = ['trt.com.tr', 'france24.com', 'pbskids.org', 'nhkwlive', 'ntv1.akamaized.net', 'content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be'];
   const all = JSON.stringify(manifest.channels.map(function (channel) { return channel.url; }));
   blockedHosts.forEach(function (host) {
     assert.equal(all.indexOf(host), -1, 'unverified source must not be shipped: ' + host);

@@ -34,6 +34,7 @@ function toM3u(channels) {
       ['source-page', channel.sourcePage],
       ['backup-url', channel.backupUrl],
       ['verified-at', channel.verifiedAt],
+      ['access-note', channel.access],
       ['rights-note', channel.rights],
       ['hls-note', channel.hlsNotes]
     ]

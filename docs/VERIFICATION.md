@@ -152,7 +152,7 @@ Captured from the TV app through DevTools (`docs/screenshots/`). The hardware vi
 | Turkish-language channel | **BLOCKED** | TRT hosts fail TLS handshake from this network (`SEC_E_ILLEGAL_MESSAGE`); HTTP returns 403 |
 | Al Jazeera English / NHK World | **BLOCKED** | DNS does not resolve from this network |
 | France 24 | **BROKEN SOURCE** | Published master points to variants that return 400 |
-| NASA TV | **BROKEN SOURCE** | Master renditions return 404 |
+| NASA TV | **SUPERSEDED** | Host manifest later passed, but the TV player raised media error 4; removed from 1.3.0 (see section 17) |
 | ABC News Live / Euronews | **DEAD ENDPOINT** | HTTP 404 |
 | Movies / kids / music channels | **NOT AVAILABLE** | No verified public HLS feeds that permit embedding were found; private FAST endpoints were not scraped |
 | Audible audio | **NOT TESTED** | Instrumentation unavailable on webOS; human listening required |
@@ -296,3 +296,103 @@ Captured from the running TV app through DevTools. The hardware video plane is n
 GitHub Actions run `41011623571` (pull request) and `41011617299` (branch push) both completed as `failure` in 3–4 seconds. The job record shows `runner_id: 0`, `runner_name: ""`, and `steps: []`; no checkout, install, or test step ran. This is the same account-level runner-start restriction observed on 1.1.0, not a source failure. The equivalent local pipeline passed after the final code change.
 
 The release asset was downloaded again with `gh release download` into `.work/release-readback/` and independently hashed; it matches the installed package byte-for-byte. Physical remote presses remain **NOT TESTED**; the procedure is in [REMOTE-CONTROL.md](REMOTE-CONTROL.md).
+
+# 1.3.0 legal-lineup verification — 2026-10-30
+
+This section covers the legal-parity audit and the final 13-channel lineup. The 1.2.0 remote-control fix is retained without code changes to the focus engine.
+
+## 17. Lineup changes and device results
+
+Four verified feeds were added, and one rejected feed was removed:
+
+| Channel | Host validation | On-TV result | Decision |
+| --- | --- | --- | --- |
+| Al Jazeera Arabic | H.264/AAC, HTTPS, no encryption | `readyState 4`, 1280×720, time advancing | **Shipped** |
+| FOX Weather | H.264/AAC, HTTPS, no encryption | `readyState 4`, 992×558, time advancing | **Shipped** |
+| CBS Sports HQ | H.264/AAC, HTTPS, no encryption | `readyState 4`, 480×270 at final check, time advancing | **Shipped** |
+| CBS Sports Golazo | H.264/AAC, HTTPS, no encryption | `readyState 4`, 480×270, time advancing | **Shipped** |
+| NASA TV | Host manifest passed | **Media error 4** on the TV | **Removed** |
+
+NASA TV was not left visible as a broken channel. Its host is now in the rejected-source test. The shipped manifest has **13** verified entries, contiguous channel numbers 1–13, and no duplicate URLs or IDs.
+
+A migration bug was found during the 1.2.0 → 1.3.0 install: the saved starter source kept the old 9-channel bundle. `syncStarterSource()` now replaces only the `starter-public` source with the bundled lineup while preserving imported playlists, favorites, recent channels, guide data, and preferences. The remote-navigation suite asserts that behavior.
+
+## 18. Final automated checks
+
+```text
+npm run lint
+Lint passed: 12 JavaScript files and 2 JSON files checked.
+
+npm test
+ℹ tests 49
+ℹ pass 49
+ℹ fail 0
+```
+
+The suite now covers the 13-channel rights manifest, rejected NASA host, access labels, starter migration, remote navigation, guide parsing, retries, packaging, and secret scanning.
+
+## 19. Final package
+
+```text
+IPK: com.nader.freewavelive_1.3.0_all.ipk
+Size: 35846 bytes
+Control: Package com.nader.freewavelive · Version 1.3.0 · Architecture all
+App: FreeWave Live TV · id com.nader.freewavelive · version 1.3.0 · 1280x720
+Files: 18 entries
+SHA-256: 43a7777fa19a835796af904a97d07869c0598490a208e4cb0f597c6f74665706
+Package verification passed.
+```
+
+```text
+ares-install -d "Office TV" com.nader.freewavelive_1.3.0_all.ipk
+Success
+
+ares-launch -d "Office TV" com.nader.freewavelive
+Launched application com.nader.freewavelive
+```
+
+## 20. Final on-TV render
+
+Captured from the running TV app after a hard reload through the DevTools session:
+
+```json
+{
+  "version": "v1.3.0",
+  "rows": 13,
+  "access": 13,
+  "names": [
+    "CGTN English", "DW English", "DW Arabic", "CBS News 24/7", "CNA",
+    "Bloomberg Television US", "Bloomberg Television Europe", "Red Bull TV",
+    "Arirang TV", "Al Jazeera Arabic", "FOX Weather", "CBS Sports HQ",
+    "CBS Sports Golazo"
+  ]
+}
+```
+
+A final CBS Sports HQ selection produced:
+
+```json
+{"channel":"CBS Sports HQ","readyState":4,"paused":false,"time":50.27,"width":480,"height":270,"error":0,"message":""}
+```
+
+All 13 channels reached `readyState 4` with advancing playback time during the device pass. Video decoding is **VERIFIED**; audible output remains **NOT TESTED**.
+
+## 21. Network-parity result
+
+The audit is in [NETWORK-PARITY.md](NETWORK-PARITY.md). It classifies every named YouTube TV network and separates exact free access, OTA, free alternatives, and subscription-only feeds.
+
+- Exact free feeds of subscription-only premium networks: **0**.
+- Free alternatives shipped and playable: **13 channels**, none branded as a premium network.
+- OTA ABC/CBS/NBC/FOX/PBS: available only through the TV tuner; **not integrated**, because webOS exposes no supported tuner API.
+- Subscription-authenticated streams: **0** integrated; no provider login, DRM, or trial was added.
+- Movies/kids/music/general entertainment: **0 verified** public feeds.
+
+The 300-channel target is **BLOCKED** by distribution rights and provider endpoint policy, not by the parser or player.
+
+## 22. Screenshot
+
+`docs/screenshots/12-lineup-1.3.0.png` was captured from the running app after the final state probe and cropped to the 1280×720 app canvas. It shows the 13-channel count, the `FREE LIVE` labels, and CBS Sports HQ selected. The hardware video plane is not composited into DevTools captures, so the video region may appear blank/white; playback evidence is the measured state above.
+
+## 23. GitHub delivery
+
+See the readback appended after publication. The release asset must hash to `43a7777fa19a835796af904a97d07869c0598490a208e4cb0f597c6f74665706` before this section is marked VERIFIED.

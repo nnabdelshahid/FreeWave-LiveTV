@@ -162,4 +162,32 @@ Captured from the TV app through DevTools (`docs/screenshots/`). The hardware vi
 
 ## 10. Delivery
 
-Repository, CI run, pull request, merge, and release-asset readback are recorded in the final delivery section appended after publication.
+### Repository
+
+- URL: https://github.com/nnabdelshahid/FreeWave-LiveTV
+- Visibility: public
+- Default branch: `main`
+- `main` HEAD: `4b5a87c78386b0a7e486b5db212c079c0b25f007` ("Record the 1.1.0 verification evidence")
+- Remote refs read back with `git ls-remote`: `refs/heads/main` and `refs/tags/v1.1.0` both at `4b5a87c`.
+
+### Release
+
+- URL: https://github.com/nnabdelshahid/FreeWave-LiveTV/releases/tag/v1.1.0
+- Asset: `com.nader.freewavelive_1.1.0_all.ipk`, 33,090 bytes
+- GitHub asset digest: `sha256:ec53bfd13c3ec25cc6144f1edd910cc4ef01e6aca5f4ded922cb4116f1e684ef`
+- The asset was downloaded again with `gh release download` and independently hashed locally; it matched the installed package byte-for-byte.
+
+### GitHub Actions — BLOCKED
+
+Both the push-triggered CI run (`41009036824`), its rerun, and the manual `workflow_dispatch` run (`41009204864`) failed in 3–5 seconds with:
+
+```text
+steps: []
+runner_id: 0
+runner_name: ""
+conclusion: failure
+```
+
+No job step executed, so this is not a source or test failure. `githubstatus.com` reported “All Systems Operational” and “Actions: operational”; the repository reports `actions/permissions.enabled = true` and `allowed_actions = all`. The failure is an account/runner-start restriction that cannot be fixed from repository code. The equivalent local pipeline (`lint` → lineup build → package → 37 tests → `check:ipk`) passed, and the release artifact was verified manually.
+
+A delivery-evidence pull request is open and intentionally **not merged**, because the required checks cannot start. Resolving the GitHub Actions runner restriction and re-running CI is the remaining step to merge it.

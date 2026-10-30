@@ -16,7 +16,9 @@ Built and installed on the target **LG 24LQ520S-PU** (webOS 22, 1366 × 768) on 
 | Favorites, recent, resume | **VERIFIED** | Favorites and 9 recent channels persisted; after reload the last channel resumed playing |
 | M3U import | **VERIFIED (automated + on-device search/lineup)** | Parsing covered by tests; imported lineup rendered on the TV. A URL import is subject to the source's CORS policy |
 | 1.1.0 IPK | **VERIFIED** | `scripts/check-ipk.js` validates archive structure, package metadata, required files, and absence of secrets |
-| GitHub + CI | **VERIFIED** | Repository, workflow run, PR merge, and release asset recorded in [VERIFICATION.md](docs/VERIFICATION.md) |
+| GitHub repository + release | **VERIFIED** | `nnabdelshahid/FreeWave-LiveTV`, release `v1.1.0`; the downloaded asset re-hashed to `ec53bfd1…` |
+| GitHub Actions CI | **BLOCKED** | Every job fails before a runner starts (`runner_id 0`, zero steps, 3–5 s) while GitHub status is operational. The same checks pass locally |
+| Pull request | **BLOCKED (open)** | Delivery-evidence PR opened; it is intentionally not merged because its required checks cannot start |
 
 The original 1.0.0 IPK was recovered and inspected (valid Debian `ar` archive containing `control.tar.gz` and `data.tar.gz`). It is superseded by 1.1.0.
 

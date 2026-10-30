@@ -16,10 +16,10 @@ Built and installed on the target **LG 24LQ520S-PU** (webOS 22, 1366 × 768) on 
 | TV guide import | **VERIFIED** | A pasted XMLTV document produced 2 schedule entries in the on-TV guide with local-time labels |
 | Favorites, recent, resume | **VERIFIED** | Favorites and 9 recent channels persisted; after reload the last channel resumed playing |
 | M3U import | **VERIFIED (automated + on-device search/lineup)** | Parsing covered by tests; imported lineup rendered on the TV. A URL import is subject to the source's CORS policy |
-| 1.2.0 IPK | **VERIFIED** | `scripts/check-ipk.js` validates 18 entries, archive structure, package metadata, required files, and absence of secrets |
-| GitHub repository + release | **VERIFIED** | `nnabdelshahid/FreeWave-LiveTV`, release `v1.1.0`; the downloaded asset re-hashed to `ec53bfd1…` |
-| GitHub Actions CI | **BLOCKED** | Every job fails before a runner starts (`runner_id 0`, zero steps, 3–5 s) while GitHub status is operational. The same checks pass locally |
-| Pull request | **BLOCKED (open)** | Delivery-evidence PR opened; it is intentionally not merged because its required checks cannot start |
+| 1.2.0 IPK | **VERIFIED** | `scripts/check-ipk.js` validates 18 entries, archive structure, package metadata, required files, and absence of secrets. SHA-256 `1b1421a8…` |
+| GitHub repository + release | **VERIFIED** | `nnabdelshahid/FreeWave-LiveTV`, release [v1.2.0](https://github.com/nnabdelshahid/FreeWave-LiveTV/releases/tag/v1.2.0); the downloaded asset re-hashed to `1b1421a8…` |
+| GitHub Actions CI | **BLOCKED** | Run `41011623571` failed with `runner_id: 0`, zero steps, in 4 s while GitHub status is operational. The same pipeline passes locally (48/48) |
+| Pull request | **BLOCKED (open)** | [PR #2](https://github.com/nnabdelshahid/FreeWave-LiveTV/pull/2) contains the 1.2.0 fix; it is intentionally not merged because its required checks cannot start |
 
 The original 1.0.0 IPK was recovered and inspected (valid Debian `ar` archive containing `control.tar.gz` and `data.tar.gz`). It is superseded by 1.2.0, which fixes launch focus, visible focus, OK activation, Back handling, and navigation out of Setup fields.
 
@@ -75,7 +75,7 @@ An unsigned package requires an active Developer Mode session and Key Server pai
 Requires Node.js 20+ and the webOS CLI (`npm install -g @webos-tools/cli`).
 
 ```bash
-npm ci                 # installs the jsdom test dependency
+npm ci                 # clean install, including the jsdom test dependency
 npm run build:lineup   # regenerate M3U + starter script from data/channels.json
 npm run lint           # syntax + JSON + package metadata checks
 npm run package        # ares-package app -o .

@@ -279,3 +279,20 @@ Captured from the running TV app through DevTools. The hardware video plane is n
 | `09-remote-guide.png` | Guide row focus, imported XMLTV and unavailable rows |
 | `10-remote-diagnostics.png` | Diagnostics overlay with key, action, handled, focus, screen, channel |
 | `11-remote-player-pause.png` | Paused stream and focused Play control (`PLAY` label) |
+
+## 16. 1.2.0 delivery readback
+
+| Item | Value |
+| --- | --- |
+| Branch | `fix/remote-control-1.2.0` |
+| Commit | `c0ed17c` — Fix remote navigation and focus across FreeWave |
+| Pull request | https://github.com/nnabdelshahid/FreeWave-LiveTV/pull/2 |
+| Release | https://github.com/nnabdelshahid/FreeWave-LiveTV/releases/tag/v1.2.0 |
+| Asset | `com.nader.freewavelive_1.2.0_all.ipk`, 34,772 bytes |
+| GitHub asset digest | `sha256:1b1421a8039de067c830c36a04f372cedd0a763cbe1644c299d4ee1a2f058e9f` |
+| Re-download hash | `1b1421a8039de067c830c36a04f372cedd0a763cbe1644c299d4ee1a2f058e9f` |
+| Merge status | **BLOCKED** — required CI cannot start; PR remains open |
+
+GitHub Actions run `41011623571` (pull request) and `41011617299` (branch push) both completed as `failure` in 3–4 seconds. The job record shows `runner_id: 0`, `runner_name: ""`, and `steps: []`; no checkout, install, or test step ran. This is the same account-level runner-start restriction observed on 1.1.0, not a source failure. The equivalent local pipeline passed after the final code change.
+
+The release asset was downloaded again with `gh release download` into `.work/release-readback/` and independently hashed; it matches the installed package byte-for-byte. Physical remote presses remain **NOT TESTED**; the procedure is in [REMOTE-CONTROL.md](REMOTE-CONTROL.md).

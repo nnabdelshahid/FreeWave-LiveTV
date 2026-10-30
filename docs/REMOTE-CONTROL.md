@@ -105,6 +105,16 @@ Only one model is used:
 
 This removes the previous race between platform history, browser history, and the two-press exit arm.
 
+## Compatibility with LG's RemoteControl sample
+
+Checked against [webOS-TV-app-samples/RemoteControl](https://github.com/webOS-TV-app-samples/RemoteControl):
+
+- The sample makes every `.item` focusable and uses spatial navigation. FreeWave uses the same model with a custom engine, adding dialog scoping and deterministic fallbacks.
+- The sample requires one focused element at all times and identical behavior for cursor/OK selection. FreeWave focuses on launch and routes pointer-down and OK through the same `focusElement()` / `activateFocused()` path.
+- The sample treats a visible selection effect as mandatory. FreeWave uses a 3 px mint outline plus an inset ring on rows and controls, not `:focus-visible` alone.
+- The sample activates on key 13. FreeWave also handles 13 explicitly, including checkbox and select controls, rather than depending on native button activation.
+- The sample focuses on `mouseover` as the cursor moves. FreeWave focuses on `pointerdown` and then performs the normal click; this avoids a resting Magic Remote cursor fighting D-pad focus, while keeping pointer and D-pad on the same element model.
+
 ## Diagnostics
 
 Setup → **Diagnostics** → **Show remote diagnostics overlay** enables a local-only overlay. It shows:

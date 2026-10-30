@@ -47,7 +47,7 @@ One key, `freewave.live.v1`, stores:
   sources: [{ id, name, url, channels: [...] }],
   favorites: [channelKey],
   recent: [channelKey],          // newest first, max 12
-  prefs: { resume, startMuted, retries },
+  prefs: { resume, startMuted, retries, diagnostics },
   guide: { channels, programs }, // already filtered to matching tvg-ids
   guideUrl,
   guideUpdatedAt,
@@ -58,6 +58,8 @@ One key, `freewave.live.v1`, stores:
 - A channel key is `tvg-id|url` (or `name|url` when no id), so the same stream imported twice deduplicates.
 - Saves are wrapped in `try/catch`; a full quota shows a user-facing message instead of breaking playback.
 - Version 1.0 state loads unchanged; missing fields get defaults.
+- The bundled `starter-public` source is refreshed on launch from the packaged lineup. Imported sources, favorites, recent, guide, and preferences are untouched, so upgrading from 1.2.0 replaces the old 9-channel bundle with the current 13.
+- Each channel may carry `access: "FREE LIVE"`, displayed in the row. It describes a public broadcaster feed, not a paid network.
 - Last channel, favorites, recent list, and guide survive relaunch (verified on device).
 
 ## Playback
@@ -97,28 +99,33 @@ LG's streaming documentation lists `EXT-X-PROGRAM-DATE-TIME` as unsupported. CGT
 - The guide dialog lists every channel with NOW/NEXT cells; focusing a row shows the available description.
 - If a guide URL is saved and the TV is online, it refreshes 5 s after launch and every 6 hours.
 
-## Remote-control map
+## Remote-control and focus model
 
-Centralized in `core.remoteAction(key, keyCode, isEditable)`:
+Key decoding is centralized in `core.remoteAction(key, keyCode, isEditable)`. It accepts Chromium names, webOS names (`GoBack`, `Back`, `XF86Back`, `OK`, `Select`, `Up`), and raw codes as the final fallback.
 
 | Input | Action |
 | --- | --- |
 | Arrows | Spatial focus movement, scoped to the open dialog |
-| OK / Enter | Native button activation |
-| Back / Escape | Close guide → close settings → arm exit (second Back exits via `webOS.platformBack`) |
+| OK / Enter | Explicit `activateFocused()` → `click()`; checkbox/select handled directly |
+| Back / GoBack / Escape (461) | Close Guide → close Setup → `webOS.platformBack()` at home |
 | Red / Green | All channels / Favorites |
 | Yellow / `y` | Toggle favorite for the focused or current channel |
 | Blue | Settings |
 | Channel Up/Down, Page Up/Down | Next/previous visible channel |
-| Play / Pause / Stop | Playback control |
+| Play / Pause / Stop | Playback control with `PLAY`/`PAUSE` feedback |
+| Rewind / Fast-forward | Seek −10 s / +10 s when the live buffer permits |
 | Info / Guide | Open TV guide |
 | Digits | Channel-number tuning after 900 ms |
 
-Text inputs suppress arrow/letter handling so the on-screen keyboard and search field work normally.
+`focusElement()` calls `focus({preventScroll:true})`, scrolls the target into view, and refreshes the optional diagnostics overlay. `visibleFocusables()` excludes disabled, hidden, inert, and off-screen controls. Setup and Guide each restrict candidates to their own dialog. Up/Down leaves a text field; Left/Right stays native for caret movement. Setup restores its opener; Guide restores the current channel card; channel-list rebuilds restore the focused card by `data-channel-key`.
+
+Back uses one model: `appinfo.json` sets `disableBackHistoryAPI: true`, the app handles key 461 directly, and it never calls `pushState` or relies on `popstate`. See [REMOTE-CONTROL.md](REMOTE-CONTROL.md) for the full architecture, diagnostics, and physical-remote acceptance procedure.
 
 ## Diagnostics
 
-The settings dialog reports local-only values: app version, network, current channel, redacted stream URL, player state, video dimensions, decoded audio bytes when the platform exposes them, dropped frames, guide entry count, guide update time, storage use, and the last error. “Check current stream” fetches the manifest and reports HLS type, renditions, encryption, discontinuity, and PROGRAM-DATE-TIME presence. A CORS block is reported as such.
+The settings dialog reports local-only values: screen (and previous screen), app version, network, current channel, redacted stream URL, player state, video dimensions, decoded audio bytes when the platform exposes them, dropped frames, guide entry count, guide update time, storage use, and the last error. “Check current stream” fetches the manifest and reports HLS type, renditions, encryption, discontinuity, and PROGRAM-DATE-TIME presence. A CORS block is reported as such.
+
+An optional overlay shows the received key name/code, normalized action, handled flag, focused element, screen, previous screen, and current channel. It is off by default and local-only; the same JSON is logged only while it is enabled.
 
 Every 10 seconds while playing, the app logs a `[freewave] stats` line with redacted URLs, playback time, dimensions, decode counters, dropped frames, and mute state for on-device inspection.
 
@@ -126,7 +133,7 @@ Every 10 seconds while playing, the app logs a `[freewave] stats` line with reda
 
 `ares-package app -o .` produces `com.nader.freewavelive_<version>_all.ipk` (an `ar` archive containing `control.tar.gz` and `data.tar.gz`). `scripts/check-ipk.js` parses both layers without external tools, checks the app id/version/resolution, confirms required files, and scans packaged text for secret patterns.
 
-CI runs lint → lineup build → package → tests → IPK verification, then uploads the package artifact. Tagged releases attach the IPK to a GitHub Release.
+CI runs `npm ci` → lint → lineup build → package → tests → IPK verification, then uploads the package artifact. The jsdom test dependency is installed from `package-lock.json`. Tagged releases attach the IPK to a GitHub Release.
 
 ## Security and privacy
 

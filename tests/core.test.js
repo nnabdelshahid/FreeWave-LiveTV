@@ -88,7 +88,7 @@ test('finds current and next guide entries and bounds progress', function () {
 test('reads backup, language, rights and source-page playlist attributes', function () {
   const playlist = [
     '#EXTM3U',
-    '#EXTINF:-1 tvg-id="a.b" tvg-language="Arabic" tvg-country="DE" source-page="https://broadcaster.example/live" backup-url="https://cdn.example/backup.m3u8" rights-note="Official free stream" verified-at="2026-10-29" hls-note="No PDT tag",Example TV',
+    '#EXTINF:-1 tvg-id="a.b" tvg-language="Arabic" tvg-country="DE" source-page="https://broadcaster.example/live" backup-url="https://cdn.example/backup.m3u8" rights-note="Official free stream" verified-at="2026-10-29" access-note="FREE LIVE" hls-note="No PDT tag",Example TV',
     'https://cdn.example/main.m3u8'
   ].join('\n');
   const channel = core.parsePlaylist(playlist, 'https://lists.example/channels.m3u')[0];
@@ -98,6 +98,7 @@ test('reads backup, language, rights and source-page playlist attributes', funct
   assert.equal(channel.sourcePage, 'https://broadcaster.example/live');
   assert.equal(channel.rights, 'Official free stream');
   assert.equal(channel.verifiedAt, '2026-10-29');
+  assert.equal(channel.access, 'FREE LIVE');
   assert.equal(channel.hlsNotes, 'No PDT tag');
 });
 
@@ -228,6 +229,17 @@ test('maps webOS remote codes and keys to predictable actions', function () {
   assert.equal(core.remoteAction('ArrowDown', 40, true), null);
   assert.equal(core.remoteAction('Escape', 27, true), 'back');
   assert.equal(core.remoteAction('y', 89, true), null);
+});
+
+test('accepts webOS key names as well as Chromium key names and raw codes', function () {
+  assert.equal(core.remoteAction('GoBack', 461, false), 'back');
+  assert.equal(core.remoteAction('Back', 461, false), 'back');
+  assert.equal(core.remoteAction('XF86Back', 461, false), 'back');
+  assert.equal(core.remoteAction('OK', 13, false), 'select');
+  assert.equal(core.remoteAction('Select', 13, false), 'select');
+  assert.equal(core.remoteAction('Up', 38, false), 'up');
+  assert.equal(core.remoteAction('MediaFastForward', 417, false), 'seek-forward');
+  assert.equal(core.remoteAction('MediaRewind', 412, false), 'seek-back');
 });
 
 test('builds guide rows with explicit unavailable data instead of invented programs', function () {

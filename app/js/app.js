@@ -3,7 +3,7 @@
 
   const Core = window.FreewaveCore;
   const STORE_KEY = 'freewave.live.v1';
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.3.0';
   const $ = function (id) { return document.getElementById(id); };
   const el = {
     clock: $('clockLabel'), allCount: $('allCount'), favoriteCount: $('favoriteCount'), recentCount: $('recentCount'),
@@ -22,7 +22,10 @@
     guideModal: $('guideModal'), guideList: $('guideList'), guideStatus: $('guideStatus'), guideDetail: $('guideDetail'),
     prefResume: $('prefResume'), prefMuted: $('prefMuted'), prefRetries: $('prefRetries'),
     prefsFeedback: $('prefsFeedback'), diagList: $('diagList'), diagFeedback: $('diagFeedback'),
-    appVersion: $('appVersion')
+    appVersion: $('appVersion'),
+    diagOverlay: $('diagOverlay'), diagKey: $('diagKey'), diagAction: $('diagAction'),
+    diagHandled: $('diagHandled'), diagFocus: $('diagFocus'), diagScreen: $('diagScreen'),
+    diagPrevious: $('diagPrevious'), diagChannel: $('diagChannel'), prefDiagnostics: $('prefDiagnostics')
   };
 
   const state = {
@@ -37,7 +40,7 @@
     lastKey: '',
     view: 'all',
     category: '',
-    prefs: { resume: true, startMuted: false, retries: 1 },
+    prefs: { resume: true, startMuted: false, retries: 1, diagnostics: false },
     playback: { attempts: 0, usingBackup: false, timer: 0 },
     lastError: '',
     lastErrorAt: 0,
@@ -45,8 +48,10 @@
     statsTimer: 0,
     digitBuffer: '',
     digitTimer: 0,
-    exitArmed: false,
-    settingsHistoryOpen: false
+    screen: 'home',
+    previousScreen: 'home',
+    lastFocused: null,
+    keyLog: { key: '', code: 0, action: '', handled: false }
   };
 
   function normalizeChannel(channel) {
@@ -68,6 +73,7 @@
       sourcePage: channel.sourcePage || '',
       rights: channel.rights || '',
       verifiedAt: channel.verifiedAt || '',
+      access: channel.access || '',
       hlsNotes: channel.hlsNotes || '',
       source: channel.source || 'Saved playlist'
     };
@@ -87,6 +93,7 @@
         state.prefs.resume = saved.prefs.resume !== false;
         state.prefs.startMuted = saved.prefs.startMuted === true;
         state.prefs.retries = Number.isFinite(saved.prefs.retries) ? Math.max(0, Math.min(3, saved.prefs.retries)) : 1;
+        state.prefs.diagnostics = saved.prefs.diagnostics === true;
       }
       if (saved.guide && saved.guide.programs && typeof saved.guide.programs === 'object') {
         state.guide = saved.guide;
@@ -137,6 +144,7 @@
           sourcePage: entry.sourcePage,
           rights: entry.rights,
           verifiedAt: entry.verifiedAt,
+          access: entry.access,
           hlsNotes: entry.hlsNotes,
           source: 'FreeWave verified lineup'
         });
@@ -150,6 +158,16 @@
     if (state.sources.length) return;
     const channels = starterChannels();
     if (channels.length) state.sources = [{ id: 'starter-public', name: 'FreeWave verified lineup', url: '', channels: channels }];
+  }
+
+  function syncStarterSource() {
+    const channels = starterChannels();
+    if (!channels.length) return;
+    const source = state.sources.find(function (item) { return item.id === 'starter-public'; }) ||
+      state.sources.find(function (item) { return !item.url && /FreeWave verified lineup/i.test(item.name); });
+    if (!source) return;
+    source.name = 'FreeWave verified lineup';
+    source.channels = channels;
   }
 
   function getAllChannels() {
@@ -200,7 +218,7 @@
 
   function groupDescription(channel) {
     const language = channel.language ? channel.language + ' · ' : '';
-    return language + (channel.group || 'Public') + ' · free live stream';
+    return language + (channel.group || 'Public') + ' · ' + (channel.access ? channel.access.toLowerCase() : 'free live stream');
   }
 
   function makeChannelRow(channel, position) {
@@ -228,6 +246,12 @@
     tag.className = 'channel-tag';
     tag.textContent = channel.group || 'Public';
     tags.appendChild(tag);
+    if (channel.access) {
+      const access = document.createElement('span');
+      access.className = 'channel-tag channel-access';
+      access.textContent = channel.access;
+      tags.appendChild(access);
+    }
     info.appendChild(name);
     info.appendChild(description);
     info.appendChild(tags);
@@ -295,7 +319,7 @@
 
     if (focusedKey) {
       const row = Array.prototype.find.call(el.channelList.querySelectorAll('.channel-row'), function (item) { return item.dataset.channelKey === focusedKey; });
-      if (row) row.focus();
+      if (row) focusElement(row);
     }
   }
 
@@ -311,10 +335,10 @@
     state.category = category || '';
     renderAll();
     const first = el.channelList.querySelector('.channel-row');
-    if (first) first.focus();
+    if (first) focusElement(first);
     else {
       const activeNav = document.querySelector('.sidebar .nav-item.active');
-      if (activeNav) activeNav.focus();
+      if (activeNav) focusElement(activeNav);
     }
   }
 
@@ -336,6 +360,12 @@
     el.muteToggle.innerHTML = el.video.muted ? '◖ <span>MUTED</span>' : '◖ <span>SOUND</span>';
   }
 
+  function syncPlayButton() {
+    const playing = !!currentChannel() && !el.video.paused;
+    el.playToggle.innerHTML = playing ? '❚❚ <span>PAUSE</span>' : '▶ <span>PLAY</span>';
+    el.playToggle.setAttribute('aria-label', playing ? 'Pause live TV' : 'Play or resume live TV');
+  }
+
   function startPlayback(channel, url, isRetry) {
     if (!channel) return;
     if (!isRetry) {
@@ -351,6 +381,7 @@
     el.playerPlaceholder.hidden = false;
     setPlaybackMessage('Connecting to ' + channel.name + (target !== channel.url ? ' backup feed' : '') + '…', false);
     const attempt = el.video.play();
+    syncPlayButton();
     if (attempt && typeof attempt.catch === 'function') {
       attempt.catch(function () {
         setPlaybackMessage('Press PLAY to start this stream. If it still will not play, check its format, region, or availability.', true);
@@ -440,24 +471,23 @@
 
   function openSettings() {
     if (!el.modal.hidden) return;
-    if (!el.guideModal.hidden) el.guideModal.hidden = true;
+    if (!el.guideModal.hidden) closeGuide();
+    rememberFocus();
     el.modal.hidden = false;
-    state.settingsHistoryOpen = true;
-    try { history.pushState({ freewaveSettings: true }, '', '#setup'); } catch (error) { state.settingsHistoryOpen = false; }
+    setScreen('settings');
     syncPrefsUi();
+    syncDiagnosticsUi();
     renderSourceList();
     updateDiagnostics();
     if (state.guideUrl) el.epgUrl.value = state.guideUrl;
-    setTimeout(function () { el.playlistUrl.focus(); }, 50);
+    setTimeout(function () { focusElement(el.playlistUrl); }, 50);
   }
 
   function closeSettings() {
     if (el.modal.hidden) return;
     el.modal.hidden = true;
-    if (state.settingsHistoryOpen) {
-      state.settingsHistoryOpen = false;
-      try { history.back(); } catch (error) { }
-    }
+    setScreen('home');
+    if (!restoreFocus(state.lastFocused)) ensureFocus();
   }
 
   function renderSourceList() {
@@ -620,13 +650,16 @@
     el.prefResume.checked = !!state.prefs.resume;
     el.prefMuted.checked = !!state.prefs.startMuted;
     el.prefRetries.value = String(state.prefs.retries);
+    if (el.prefDiagnostics) el.prefDiagnostics.checked = !!state.prefs.diagnostics;
   }
 
   function readPrefs() {
     state.prefs.resume = el.prefResume.checked;
     state.prefs.startMuted = el.prefMuted.checked;
     state.prefs.retries = Number(el.prefRetries.value) || 0;
+    if (el.prefDiagnostics) state.prefs.diagnostics = el.prefDiagnostics.checked;
     persist();
+    syncDiagnosticsUi();
     setFeedback(el.prefsFeedback, 'Playback preferences saved.', false);
   }
 
@@ -639,6 +672,7 @@
     const video = el.video;
     const quality = video.getVideoPlaybackQuality ? video.getVideoPlaybackQuality() : null;
     const rows = [
+      ['Screen', state.screen + (state.previousScreen !== state.screen ? ' (from ' + state.previousScreen + ')' : '')],
       ['App version', APP_VERSION],
       ['Network', navigator.onLine ? 'Online' : 'Offline'],
       ['Current channel', channel ? channel.name : 'None selected'],
@@ -667,6 +701,7 @@
       el.diagList.appendChild(row);
     });
     el.appVersion.textContent = 'v' + APP_VERSION;
+    updateDiagOverlay();
   }
 
   function runStreamCheck() {
@@ -733,6 +768,7 @@
     if (!currentChannel()) { showToast('Select a channel first.'); return; }
     if (el.video.paused) playCurrent();
     else el.video.pause();
+    syncPlayButton();
   }
 
   function toggleMute() {
@@ -761,9 +797,80 @@
     updateDiagnostics();
   }
 
+  function setScreen(screen) {
+    if (screen === state.screen) return;
+    state.previousScreen = state.screen;
+    state.screen = screen;
+    updateDiagOverlay();
+  }
+
+  function rememberFocus() {
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== document.documentElement) state.lastFocused = active;
+  }
+
+  function focusElement(node) {
+    if (!node || typeof node.focus !== 'function') return false;
+    try { node.focus({ preventScroll: true }); } catch (error) { node.focus(); }
+    if (node.scrollIntoView) {
+      try { node.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (error) { }
+    }
+    updateDiagOverlay();
+    return document.activeElement === node;
+  }
+
+  function restoreFocus(node) {
+    if (node && node.isConnected && focusElement(node)) return true;
+    return false;
+  }
+
+  function channelRowByKey(key) {
+    return Array.prototype.find.call(el.channelList.querySelectorAll('.channel-row'), function (item) {
+      return item.dataset.channelKey === key;
+    }) || null;
+  }
+
+  function ensureFocus() {
+    const scope = focusScope();
+    const candidates = visibleFocusables(scope);
+    if (!candidates.length) return false;
+    const active = document.activeElement;
+    if (active && candidates.indexOf(active) !== -1) return true;
+    const preferred = scope === document ? channelRowByKey(state.currentKey) : null;
+    return focusElement(preferred && candidates.indexOf(preferred) !== -1 ? preferred : candidates[0]);
+  }
+
+  function focusDescription(node) {
+    if (!node || node === document.body || node === document.documentElement) return 'body (no control)';
+    const label = node.getAttribute('aria-label') || node.getAttribute('title') || (node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 34) || node.id || node.tagName;
+    const classes = node.classList && node.classList.length ? '.' + Array.prototype.slice.call(node.classList).slice(0, 2).join('.') : '';
+    return node.tagName.toLowerCase() + (node.id ? '#' + node.id : classes) + ' · ' + label;
+  }
+
+  function updateDiagOverlay() {
+    if (!el.diagOverlay) return;
+    const channel = currentChannel();
+    const log = state.keyLog;
+    el.diagKey.textContent = log.key ? log.key + ' (' + log.code + ')' : '—';
+    el.diagAction.textContent = log.action || '—';
+    el.diagHandled.textContent = log.key ? (log.handled ? 'YES' : 'NO') : '—';
+    el.diagFocus.textContent = focusDescription(document.activeElement);
+    el.diagScreen.textContent = state.screen;
+    el.diagPrevious.textContent = state.previousScreen;
+    el.diagChannel.textContent = channel ? channel.name : 'None selected';
+  }
+
+  function syncDiagnosticsUi() {
+    if (el.prefDiagnostics) el.prefDiagnostics.checked = !!state.prefs.diagnostics;
+    if (el.diagOverlay) el.diagOverlay.hidden = !state.prefs.diagnostics;
+    updateDiagOverlay();
+  }
+
   function visibleFocusables(scope) {
-    return Array.prototype.slice.call(scope.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]'))
-      .filter(function (item) { return !item.closest('[hidden]') && item.getClientRects().length > 0; });
+    return Array.prototype.slice.call(scope.querySelectorAll('button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]'))
+      .filter(function (item) {
+        return !item.closest('[hidden]') && !item.closest('[inert]') && item.tabIndex >= 0 && item.getClientRects().length > 0;
+      });
   }
 
   function focusScope() {
@@ -774,10 +881,9 @@
 
   function moveFocus(direction) {
     const active = document.activeElement;
-    if (active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) return;
     const candidates = visibleFocusables(focusScope());
     if (!candidates.length) return;
-    if (!active || candidates.indexOf(active) === -1) { candidates[0].focus(); return; }
+    if (!active || candidates.indexOf(active) === -1) { focusElement(candidates[0]); return; }
     const currentRect = active.getBoundingClientRect();
     const currentX = currentRect.left + currentRect.width / 2;
     const currentY = currentRect.top + currentRect.height / 2;
@@ -796,9 +902,37 @@
       const score = primary + secondary * 2.3;
       if (score < bestScore) { best = candidate; bestScore = score; }
     });
-    if (best) {
-      best.focus();
-      if (best.classList.contains('channel-row') || best.classList.contains('guide-row') || best.classList.contains('category-item')) best.scrollIntoView({ block: 'nearest' });
+    if (best) { focusElement(best); return; }
+    const index = candidates.indexOf(active);
+    const step = direction === 'down' || direction === 'right' ? 1 : -1;
+    focusElement(candidates[(index + step + candidates.length) % candidates.length]);
+  }
+
+  function activateFocused() {
+    const active = document.activeElement;
+    if (!active || active === document.body) {
+      const row = channelRowByKey(state.currentKey);
+      if (row) row.click();
+      else playCurrent();
+      return;
+    }
+    if (active.id === 'nowCard') { playCurrent(); return; }
+    if (active.tagName === 'INPUT' && active.type === 'checkbox') { active.click(); return; }
+    if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT') { active.focus(); return; }
+    if (typeof active.click === 'function') { active.click(); return; }
+    const row = channelRowByKey(state.currentKey);
+    if (row) row.click();
+    else playCurrent();
+  }
+
+  function seekBy(seconds) {
+    if (!currentChannel()) { showToast('Select a channel first.'); return; }
+    try {
+      const target = Math.max(0, Number(el.video.currentTime || 0) + seconds);
+      el.video.currentTime = target;
+      showToast(seconds < 0 ? 'Rewound 10 seconds.' : 'Forwarded 10 seconds.');
+    } catch (error) {
+      showToast('This live stream cannot seek right now.');
     }
   }
 
@@ -815,60 +949,129 @@
     if (channel) selectChannel(channel, true);
   }
 
-  function armExit() {
-    if (state.exitArmed) {
-      try {
-        if (window.webOS && typeof window.webOS.platformBack === 'function') window.webOS.platformBack();
-        else window.close();
-      } catch (error) { }
-      return;
-    }
-    state.exitArmed = true;
-    showToast('Press BACK again to exit FreeWave.');
-    setTimeout(function () { state.exitArmed = false; }, 2500);
+  function exitApp() {
+    try {
+      if (window.webOS && typeof window.webOS.platformBack === 'function') window.webOS.platformBack();
+      else window.close();
+    } catch (error) { }
   }
 
   function handleRemoteKey(event) {
-    const target = event.target;
-    const isEditable = !!(target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
-    const action = Core.remoteAction(event.key, event.keyCode || event.which, isEditable);
-    if (!action) return;
+    const key = String(event.key || event.code || '');
+    const code = Number(event.keyCode || event.which || 0);
+    const action = Core.remoteAction(key, code, false);
+    state.keyLog = { key: key, code: code, action: action || 'none', handled: false };
+    let handled = false;
+    try {
+      if (!action) return;
+      const target = event.target;
+      const isEditable = !!(target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
 
-    if (action === 'back') {
-      event.preventDefault();
-      if (!el.guideModal.hidden) closeGuide();
-      else if (!el.modal.hidden) closeSettings();
-      else armExit();
-      return;
-    }
-    if (action === 'left' || action === 'right' || action === 'up' || action === 'down') {
-      event.preventDefault();
-      moveFocus(action);
-      return;
-    }
-    if (action === 'select') return;
+      if (action === 'back') {
+        event.preventDefault();
+        if (!el.guideModal.hidden) closeGuide();
+        else if (!el.modal.hidden) closeSettings();
+        else exitApp();
+        handled = true;
+        return;
+      }
 
-    if (action === 'favorite') {
-      event.preventDefault();
-      toggleFavorite(focusedChannel() || currentChannel());
-      return;
-    }
-    if (action === 'settings') { event.preventDefault(); openSettings(); return; }
-    if (action === 'all' || action === 'favorites') {
-      if (!el.modal.hidden || !el.guideModal.hidden) return;
-      event.preventDefault();
-      setView(action === 'all' ? 'all' : 'favorites');
-      return;
-    }
-    if (action === 'channel-up') { event.preventDefault(); nextChannel(1); return; }
-    if (action === 'channel-down') { event.preventDefault(); nextChannel(-1); return; }
-    if (action === 'play') { event.preventDefault(); playCurrent(); return; }
-    if (action === 'pause' || action === 'stop') { event.preventDefault(); el.video.pause(); return; }
-    if (action === 'info' || action === 'guide') { event.preventDefault(); openGuide(); return; }
-    if (action === 'digit' && !isEditable) {
-      state.digitBuffer += event.key;
-      clearTimeout(state.digitTimer);
-      state.digitTimer = setTimeout(function () { focusChannelByNumber(state.digitBuffer); state.digitBuffer = ''; }, 900);
+      if (isEditable) {
+        if (action === 'up' || action === 'down') {
+          event.preventDefault();
+          moveFocus(action);
+          handled = true;
+          return;
+        }
+        if (action === 'select' && target.tagName === 'INPUT' && target.type === 'checkbox') {
+          event.preventDefault();
+          target.click();
+          handled = true;
+          return;
+        }
+        if (action === 'select' && target.tagName === 'SELECT') {
+          event.preventDefault();
+          target.focus();
+          target.click();
+          handled = true;
+          return;
+        }
+        return;
+      }
+
+      if (action === 'left' || action === 'right' || action === 'up' || action === 'down') {
+        event.preventDefault();
+        moveFocus(action);
+        handled = true;
+        return;
+      }
+      if (action === 'select') {
+        event.preventDefault();
+        activateFocused();
+        handled = true;
+        return;
+      }
+      if (action === 'favorite') {
+        event.preventDefault();
+        toggleFavorite(focusedChannel() || currentChannel());
+        handled = true;
+        return;
+      }
+      if (action === 'settings') {
+        event.preventDefault();
+        openSettings();
+        handled = true;
+        return;
+      }
+      if (action === 'all' || action === 'favorites') {
+        if (!el.modal.hidden || !el.guideModal.hidden) return;
+        event.preventDefault();
+        setView(action === 'all' ? 'all' : 'favorites');
+        handled = true;
+        return;
+      }
+      if (action === 'channel-up' || action === 'channel-down') {
+        if (!el.modal.hidden || !el.guideModal.hidden) return;
+        event.preventDefault();
+        nextChannel(action === 'channel-up' ? 1 : -1);
+        handled = true;
+        return;
+      }
+      if (action === 'play') {
+        event.preventDefault();
+        playCurrent();
+        handled = true;
+        return;
+      }
+      if (action === 'pause' || action === 'stop') {
+        event.preventDefault();
+        el.video.pause();
+        handled = true;
+        return;
+      }
+      if (action === 'seek-back' || action === 'seek-forward') {
+        event.preventDefault();
+        seekBy(action === 'seek-back' ? -10 : 10);
+        handled = true;
+        return;
+      }
+      if (action === 'info' || action === 'guide') {
+        if (!el.modal.hidden) return;
+        event.preventDefault();
+        openGuide();
+        handled = true;
+        return;
+      }
+      if (action === 'digit') {
+        state.digitBuffer += key;
+        clearTimeout(state.digitTimer);
+        state.digitTimer = setTimeout(function () { focusChannelByNumber(state.digitBuffer); state.digitBuffer = ''; }, 900);
+        handled = true;
+      }
+    } finally {
+      state.keyLog.handled = handled;
+      if (state.prefs.diagnostics) console.log('[freewave] remote ' + JSON.stringify(state.keyLog));
+      updateDiagOverlay();
     }
   }
 
@@ -895,17 +1098,19 @@
   function openGuide() {
     if (!el.guideModal.hidden) return;
     if (!el.modal.hidden) closeSettings();
+    rememberFocus();
     el.guideModal.hidden = false;
+    setScreen('guide');
     renderGuide();
     const row = Array.prototype.find.call(el.guideList.querySelectorAll('.guide-row'), function (item) { return item.dataset.channelKey === state.currentKey; });
-    setTimeout(function () { (row || el.guideList.querySelector('.guide-row') || $('closeGuide')).focus(); }, 40);
+    setTimeout(function () { focusElement(row || el.guideList.querySelector('.guide-row') || $('closeGuide')); }, 40);
   }
 
   function closeGuide() {
     if (el.guideModal.hidden) return;
     el.guideModal.hidden = true;
-    const row = Array.prototype.find.call(el.channelList.querySelectorAll('.channel-row'), function (item) { return item.dataset.channelKey === state.currentKey; });
-    if (row) row.focus();
+    setScreen('home');
+    if (!restoreFocus(channelRowByKey(state.currentKey))) ensureFocus();
   }
 
   function guideProgramLabel(program) {
@@ -914,6 +1119,8 @@
   }
 
   function renderGuide() {
+    const active = document.activeElement;
+    const focusedGuideKey = active && active.classList && active.classList.contains('guide-row') ? active.dataset.channelKey : '';
     const channels = state.channels.slice(0, 60);
     const rows = Core.guideRows(channels, state.guide.programs, Date.now());
     const loadedChannels = Object.keys(state.guide.programs || {}).length;
@@ -981,6 +1188,10 @@
       });
       el.guideList.appendChild(row);
     });
+    if (focusedGuideKey) {
+      const nextRow = Array.prototype.find.call(el.guideList.querySelectorAll('.guide-row'), function (item) { return item.dataset.channelKey === focusedGuideKey; });
+      if (nextRow) focusElement(nextRow);
+    }
   }
 
   function wireUi() {
@@ -1022,6 +1233,7 @@
     el.prefResume.addEventListener('change', readPrefs);
     el.prefMuted.addEventListener('change', readPrefs);
     el.prefRetries.addEventListener('change', readPrefs);
+    if (el.prefDiagnostics) el.prefDiagnostics.addEventListener('change', readPrefs);
     el.playToggle.addEventListener('click', togglePlay);
     el.muteToggle.addEventListener('click', toggleMute);
     el.favoriteToggle.addEventListener('click', function () { toggleFavorite(); });
@@ -1031,9 +1243,13 @@
     window.addEventListener('keydown', handleRemoteKey, true);
     window.addEventListener('online', function () { updateNetworkStatus(); showToast('Network restored.'); });
     window.addEventListener('offline', function () { updateNetworkStatus(); showToast('Network lost. Playback may stop.'); });
-    window.addEventListener('popstate', function () {
-      if (!el.modal.hidden) { el.modal.hidden = true; state.settingsHistoryOpen = false; }
-      if (!el.guideModal.hidden) el.guideModal.hidden = true;
+    document.addEventListener('focusin', function () { updateDiagOverlay(); });
+    document.addEventListener('pointerdown', function (event) {
+      const control = event.target && event.target.closest ? event.target.closest('button, input, select, textarea, [tabindex="0"]') : null;
+      if (control) focusElement(control);
+    }, true);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) setTimeout(ensureFocus, 80);
     });
 
     el.video.addEventListener('loadstart', function () { setPlaybackMessage('Connecting to the channel…', false); });
@@ -1041,12 +1257,14 @@
     el.video.addEventListener('playing', function () {
       setPlaybackMessage('', false);
       el.playerPlaceholder.hidden = true;
+      syncPlayButton();
       updateDiagnostics();
       logPlaybackStats();
     });
     el.video.addEventListener('canplay', function () { if (!el.video.paused) el.playerPlaceholder.hidden = true; });
     el.video.addEventListener('pause', function () {
       const channel = currentChannel();
+      syncPlayButton();
       if (channel && !el.video.error) setPlaybackMessage('Paused · press PLAY to resume.', false);
     });
     el.video.addEventListener('error', handleVideoError);
@@ -1058,14 +1276,17 @@
   function initialize() {
     const hasSavedState = readSavedState();
     if (!hasSavedState || !state.sources.length) ensureStarterSource();
+    else syncStarterSource();
     state.channels = getAllChannels();
     syncPrefsUi();
+    syncDiagnosticsUi();
     applyMute(state.prefs.startMuted);
     wireUi();
     renderAll();
     updateClock();
     updateGuideDisplay();
     updateNetworkStatus();
+    syncPlayButton();
     updateDiagnostics();
 
     const target = (state.lastKey && channelByKey(state.lastKey)) || state.channels[0] || null;
@@ -1077,6 +1298,7 @@
         setTimeout(function () { selectChannel(target, true); }, 700);
       }
     }
+    setTimeout(function () { ensureFocus(); }, 120);
 
     setInterval(function () { updateClock(); updateGuideDisplay(); if (!el.guideModal.hidden) renderGuide(); }, 15000);
     setInterval(logPlaybackStats, 10000);

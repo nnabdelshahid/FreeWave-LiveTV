@@ -96,6 +96,15 @@
     </div>
 
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <div id="diagOverlay" class="diag-overlay" hidden aria-hidden="true">
+      <div class="diag-heading">REMOTE DIAGNOSTICS · LOCAL ONLY</div>
+      <div>KEY <span id="diagKey">—</span></div>
+      <div>ACTION <span id="diagAction">—</span> · HANDLED <span id="diagHandled">—</span></div>
+      <div>FOCUS <span id="diagFocus">—</span></div>
+      <div>SCREEN <span id="diagScreen">home</span> · PREVIOUS <span id="diagPrevious">home</span></div>
+      <div>CHANNEL <span id="diagChannel">—</span></div>
+    </div>
   </div>
 
   <div id="settingsModal" class="modal" hidden aria-modal="true" role="dialog" aria-labelledby="settingsTitle">
@@ -146,6 +155,7 @@
 
         <section class="settings-section">
           <div class="section-title-row"><span class="section-step">04</span><div><h3>Diagnostics</h3><p>Local status. Nothing is sent anywhere.</p></div></div>
+          <label class="toggle-row focusable" for="prefDiagnostics"><input id="prefDiagnostics" type="checkbox"><span>Show remote diagnostics overlay</span></label>
           <div id="diagList" class="diag-list"></div>
           <div class="inline-fields bottom-fields">
             <button id="runStreamCheck" class="secondary-button focusable" type="button">CHECK CURRENT STREAM</button>
@@ -153,7 +163,7 @@
           <div id="diagFeedback" class="field-feedback" role="status"></div>
         </section>
       </div>
-      <footer class="dialog-footer"><span>Use free, authorized streams from their broadcasters. Premium cable access and DRM workarounds are not supported.</span><span id="appVersion" class="app-version">v1.1.0</span><button id="doneSettings" class="primary-button focusable" type="button">DONE</button></footer>
+      <footer class="dialog-footer"><span>Use free, authorized streams from their broadcasters. Premium cable access and DRM workarounds are not supported.</span><span id="appVersion" class="app-version">v1.3.0</span><button id="doneSettings" class="primary-button focusable" type="button">DONE</button></footer>
     </div>
   </div>
 

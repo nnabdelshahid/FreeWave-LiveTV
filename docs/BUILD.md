@@ -45,8 +45,8 @@ debian-binary
 `scripts/check-ipk.js` verifies the real bytes rather than trusting the build log:
 
 ```bash
-node scripts/check-ipk.js com.nader.freewavelive_1.1.0_all.ipk
-# IPK ... Control: Package com.nader.freewavelive · Version 1.1.0
+node scripts/check-ipk.js com.nader.freewavelive_1.3.0_all.ipk
+# IPK ... Control: Package com.nader.freewavelive · Version 1.3.0
 # App: FreeWave Live TV · id ... · 1280x720
 # SHA-256: ...
 # Package verification passed.

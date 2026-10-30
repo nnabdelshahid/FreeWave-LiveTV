@@ -3,7 +3,7 @@
   'use strict';
   root.FREEWAVE_STARTER = {
     "version": 2,
-    "updatedAt": "2026-10-29",
+    "updatedAt": "2026-10-30",
     "channels": [
       {
         "id": "cgtn-english",
@@ -22,7 +22,8 @@
         "codecs": "H.264 Constrained Baseline 1280x720; AAC LC 2ch",
         "hlsNotes": "Media playlist contained 3 EXT-X-PROGRAM-DATE-TIME tags on 2026-10-29; on-device check required.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "dw-english",
@@ -41,7 +42,8 @@
         "codecs": "H.264 Main 640x360; AAC LC 2ch",
         "hlsNotes": "No EXT-X-PROGRAM-DATE-TIME observed in the master manifest on 2026-10-29.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "dw-arabic",
@@ -60,7 +62,8 @@
         "codecs": "H.264 480x270; AAC 2ch",
         "hlsNotes": "Master manifest exposes WebVTT subtitles plus H.264/AAC renditions; no EXT-X-PROGRAM-DATE-TIME observed.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "cbs-news-247",
@@ -79,7 +82,8 @@
         "codecs": "H.264 Main up to 1280x720; AAC LC 2ch",
         "hlsNotes": "Six-rendition master with SCTE-35 and timed ID3 metadata; no EXT-X-PROGRAM-DATE-TIME observed.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "cna",
@@ -98,7 +102,8 @@
         "codecs": "H.264 Main up to 1920x1080; AAC",
         "hlsNotes": "Five-rendition master; no EXT-X-PROGRAM-DATE-TIME observed.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "bloomberg-us",
@@ -117,7 +122,8 @@
         "codecs": "H.264 High 1280x720; AAC LC 2ch",
         "hlsNotes": "Four-rendition master; no EXT-X-PROGRAM-DATE-TIME observed.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "bloomberg-europe",
@@ -136,7 +142,8 @@
         "codecs": "H.264 High 1280x720; AAC LC 2ch",
         "hlsNotes": "Four-rendition master with DVB teletext and SCTE-35; no EXT-X-PROGRAM-DATE-TIME observed.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "red-bull-tv",
@@ -155,7 +162,8 @@
         "codecs": "H.264 Main up to 1920x1080; AAC",
         "hlsNotes": "Six-rendition master; no EXT-X-PROGRAM-DATE-TIME observed.",
         "verifiedAt": "2026-10-29",
-        "status": "verified"
+        "status": "verified",
+        "access": "FREE LIVE"
       },
       {
         "id": "arirang-tv",
@@ -174,6 +182,87 @@
         "codecs": "H.264 High up to 1920x1080; AAC LC 2ch",
         "hlsNotes": "Four-rendition master; timed ID3 metadata; no EXT-X-PROGRAM-DATE-TIME observed.",
         "verifiedAt": "2026-10-29",
+        "status": "verified",
+        "access": "FREE LIVE"
+      },
+      {
+        "id": "al-jazeera-arabic",
+        "name": "Al Jazeera Arabic",
+        "category": "News",
+        "language": "Arabic",
+        "country": "QA",
+        "number": 10,
+        "tvgId": "AlJazeera.Arabic",
+        "logo": "",
+        "access": "FREE LIVE",
+        "url": "https://live-hls-web-aja.getaj.net/AJA/index.m3u8",
+        "backupUrl": "",
+        "sourcePage": "https://www.aljazeera.net/live",
+        "rights": "Al Jazeera publishes this HLS feed on its official Arabic live page; no login, no DRM.",
+        "usAvailable": "Reachable from a US network on 2026-10-30.",
+        "codecs": "H.264 High up to 1920x1080; AAC LC 2ch",
+        "hlsNotes": "Five-rendition master; independent segments; no encryption.",
+        "verifiedAt": "2026-10-30",
+        "status": "verified"
+      },
+      {
+        "id": "fox-weather",
+        "name": "FOX Weather",
+        "category": "Weather",
+        "language": "English",
+        "country": "US",
+        "number": 11,
+        "tvgId": "FoxWeather.us",
+        "logo": "",
+        "access": "FREE LIVE",
+        "url": "https://content.uplynk.com/db88cebb80ea46269a1b2691871f3660.m3u8",
+        "backupUrl": "",
+        "sourcePage": "https://www.foxweather.com/live",
+        "rights": "FOX Weather publishes this free 24/7 ad-supported stream on its official live page; no login, no DRM.",
+        "usAvailable": "Reachable from a US network on 2026-10-30.",
+        "codecs": "H.264 up to 960x540; AAC 2ch; closed captions",
+        "hlsNotes": "Uplynk live manifest referenced by the official page; H.264/AAC renditions; no encryption.",
+        "verifiedAt": "2026-10-30",
+        "status": "verified"
+      },
+      {
+        "id": "cbs-sports-hq",
+        "name": "CBS Sports HQ",
+        "category": "Sports",
+        "language": "English",
+        "country": "US",
+        "number": 12,
+        "tvgId": "CBSSportsHQ.us",
+        "logo": "",
+        "access": "FREE LIVE",
+        "url": "https://dai.google.com/linear/hls/event/9Lq0ERvoSR-z9AwvFS-xYA/master.m3u8",
+        "backupUrl": "",
+        "sourcePage": "https://www.cbssports.com/watch/live",
+        "rights": "CBS Sports publishes this free 24/7 sports-news channel; the HLS manifest is referenced by the official CBS Sports live page; no login, no DRM. Ad-supported.",
+        "usAvailable": "Reachable from a US network on 2026-10-30.",
+        "codecs": "H.264 480x270; AAC 2ch",
+        "hlsNotes": "Google DAI live manifest; H.264/AAC; may include ad markers.",
+        "verifiedAt": "2026-10-30",
+        "status": "verified"
+      },
+      {
+        "id": "cbs-sports-golazo",
+        "name": "CBS Sports Golazo",
+        "category": "Sports",
+        "language": "English",
+        "country": "US",
+        "number": 13,
+        "tvgId": "CBSSportsGolazo.us",
+        "logo": "",
+        "access": "FREE LIVE",
+        "url": "https://dai.google.com/linear/hls/event/7f3Wv6f7QEKfQna22jHqLQ/master.m3u8",
+        "backupUrl": "",
+        "sourcePage": "https://www.cbs.com/live-tv/stream/golazo/",
+        "rights": "CBS Sports publishes this free 24/7 soccer channel; the HLS manifest is referenced by the official CBS live page; no login, no DRM. Ad-supported.",
+        "usAvailable": "Reachable from a US network on 2026-10-30.",
+        "codecs": "H.264 480x270; AAC 2ch",
+        "hlsNotes": "Google DAI live manifest; H.264/AAC; may include ad markers.",
+        "verifiedAt": "2026-10-30",
         "status": "verified"
       }
     ]

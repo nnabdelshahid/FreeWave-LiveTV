@@ -21,6 +21,7 @@ The full network-by-network comparison is in **[docs/NETWORK-PARITY.md](docs/NET
 | Build and install on TV | **VERIFIED** | `ares-install` returned `Success` for 1.3.0; `ares-launch` reported the app launched |
 | Final lineup on TV | **VERIFIED** | On-device state: `v1.3.0`, **13 rows, 13 `FREE LIVE` labels** |
 | Live playback, 13 channels | **VERIFIED (video)** | All 13 reached `readyState 4`, advanced `currentTime`, and reported decoded video dimensions; the four new feeds were sampled after install |
+| Performance sample | **VERIFIED (app metrics, 45 s)** | 876 ms reload, ~3.4 s first frame, 1.48 MB JS heap, 343 ms guide render, one video element; system RSS/CPU unavailable. See [PERFORMANCE.md](docs/PERFORMANCE.md) |
 | Audible sound | **NOT TESTED** | One enabled audio track, unmuted, volume 1. webOS exposes no reliable decoded-audio counter; a human listening check is required |
 | Remote key handling on the TV | **VERIFIED (device input)** | Launch focus, visible 3 px ring, raw 37–40/13/461, Back, favorites, pointer, player controls, ChannelUp/Down. See [REMOTE-CONTROL.md](docs/REMOTE-CONTROL.md) |
 | Physical remote actuation | **NOT TESTED** | The agent cannot press the physical remote; device-level key injection is not the same test |

@@ -424,3 +424,45 @@ The release tag remains on `fdcde6d`. A later docs-only commit records this read
 | GitHub Actions and PR merge | **BLOCKED** (account-level runner start) |
 | Exact free premium networks / 300-channel target | **BLOCKED** (rights and provider policy) |
 | Audible sound, physical remote, 15-minute soak, real URL imports | **NOT TESTED** |
+
+## 25. Performance sample — 1.3.0
+
+The installed build was measured through DevTools with one stream active. Full method and limits are in [PERFORMANCE.md](PERFORMANCE.md).
+
+| Measurement | Result |
+| --- | --- |
+| Reload to app ready | **876 ms** |
+| DOMContentLoaded / load | **651 / 702 ms** |
+| CGTN / CBS Sports HQ first frame | **3,351 / 3,553 ms** |
+| Guide open, 13 rows | **343 ms** |
+| JS heap after load / after stream / end | **1.90 / 1.08 / 1.48 MB** |
+| Renderer CPU during 45 s soak | **~3.9% of one core** |
+| 45 s soak | **9/9 samples `readyState 4`**, +40.94 s, 0 errors, one `<video>` |
+| System RSS / whole-TV CPU / swap | **NOT TESTED** — `ares-shell` rejected for the TV profile |
+| 15-minute soak | **NOT TESTED** |
+| 300-channel list performance | **NOT TESTED** — only 13 rows exist; virtualization not added |
+| Physical remote input latency | **NOT TESTED** — CDP dispatch only |
+
+## 26. Final 1.3.0 remote-device pass
+
+Raw `Unidentified` key names with webOS-style codes were dispatched into the installed app through its live DevTools session. This exercises the app's key decoder and focus engine, not the hardware remote.
+
+| Step | Observed |
+| --- | --- |
+| Launch | 13 rows; focus on CBS Sports HQ with the 3 px selected ring |
+| ArrowDown 40 | focus moved to CBS Sports Golazo |
+| OK 13 | Golazo selected; after 3 s `readyState 4`, playing |
+| Right 39 × 2 | focus moved to `prevButton`, then `playToggle` |
+| OK 13 pause | `paused: true`; label `PLAY` |
+| OK 13 resume | `paused: false`; label `PAUSE` |
+| Info 457 | Guide opened; 13 rows; focus on a guide row |
+| Back 461 | Guide closed; focus returned to the selected channel row |
+| Blue 406 | Setup opened; focus on `playlistUrl` |
+| Down 40 | focus left the URL field for `playlistText` |
+| Back 461 | Setup closed; focus restored to the channel row |
+| Green 404 / Red 403 | Favorites showed 1 row; All returned to 13 rows |
+| Yellow 405 | favorite count changed 1 → 2 |
+| ChannelDown 428 | channel changed to CBS Sports HQ |
+| Runtime exceptions | **0** |
+
+Physical button presses remain **NOT TESTED**. The acceptance procedure in [REMOTE-CONTROL.md](REMOTE-CONTROL.md) is still the required final check.

@@ -76,6 +76,19 @@ Checked on 2026-10-29/30 through the paired Developer Mode connection and the on
 - [ ] GitHub Actions runner — **BLOCKED** at account level (see VERIFICATION.md).
 - [ ] Pull request merge — blocked until required CI can run.
 
+## Performance sample
+
+- [x] Reload to app ready: 876 ms; DOMContentLoaded 651 ms; load 702 ms.
+- [x] CGTN English first frame: 3,351 ms; CBS Sports HQ: 3,553 ms.
+- [x] Guide open to 13 rows: 343 ms.
+- [x] JS heap after load/stream/end: 1.90/1.08/1.48 MB.
+- [x] 45-second soak: 9/9 `readyState 4`, +40.94 s, 0 errors, one video element.
+- [x] Renderer CPU during soak: about 3.9% of one core.
+- [ ] System RSS, whole-TV CPU, and swap — `ares-shell` rejected for the TV profile.
+- [ ] 15-minute soak.
+- [ ] 300-channel/virtualized-list performance — only 13 rows exist.
+- [ ] Physical-remote input latency.
+
 ## Remaining device checks
 
 - [ ] Press every control with the physical remote (procedure in [REMOTE-CONTROL.md](REMOTE-CONTROL.md)).

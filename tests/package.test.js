@@ -11,12 +11,19 @@ const pkg = JSON.parse(fs.readFileSync(path.join(project, 'package.json'), 'utf8
 
 test('webOS package metadata targets the supported HD app canvas and includes required app files', function () {
   const appInfo = JSON.parse(fs.readFileSync(path.join(project, 'app', 'appinfo.json'), 'utf8'));
-  assert.equal(appInfo.id, 'com.nader.freewavelive');
-  assert.equal(appInfo.type, 'web');
-  assert.equal(appInfo.resolution, '1280x720');
+  assert.equal(appInfo.id, 'com.nader.freewavelive');    assert.equal(appInfo.type, 'web');
+    assert.equal(appInfo.resolution, '1280x720');
+    assert.equal(appInfo.disableBackHistoryAPI, true, 'Back must be delivered to the app as key 461');
   for (const file of [appInfo.main, appInfo.icon, appInfo.largeIcon, 'styles.css', 'js/core.js', 'js/app.js', 'default-playlist.js']) {
     assert.ok(fs.existsSync(path.join(project, 'app', file)), 'missing package file ' + file);
   }
+});
+
+test('focus rings are visible for programmatic and remote focus, not only :focus-visible', function () {
+  const css = fs.readFileSync(path.join(project, 'app', 'styles.css'), 'utf8');
+  assert.match(css, /\.focusable:focus,/);
+  assert.doesNotMatch(css, /\.focusable:focus-visible/);
+  assert.match(css, /\.channel-row:focus/);
 });
 
 test('app and package versions stay in step', function () {

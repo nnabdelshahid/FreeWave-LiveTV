@@ -1,6 +1,6 @@
 {
   "id": "com.nader.freewavelive",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "vendor": "Nader Abdelshahid",
   "type": "web",
   "main": "index.html",
@@ -11,6 +11,6 @@
   "resolution": "1280x720",
   "bgColor": "#08111d",
   "requiredMemory": 20,
-  "disableBackHistoryAPI": false,
+  "disableBackHistoryAPI": true,
   "supportTouchMode": "virtual"
 }

@@ -230,6 +230,17 @@ test('maps webOS remote codes and keys to predictable actions', function () {
   assert.equal(core.remoteAction('y', 89, true), null);
 });
 
+test('accepts webOS key names as well as Chromium key names and raw codes', function () {
+  assert.equal(core.remoteAction('GoBack', 461, false), 'back');
+  assert.equal(core.remoteAction('Back', 461, false), 'back');
+  assert.equal(core.remoteAction('XF86Back', 461, false), 'back');
+  assert.equal(core.remoteAction('OK', 13, false), 'select');
+  assert.equal(core.remoteAction('Select', 13, false), 'select');
+  assert.equal(core.remoteAction('Up', 38, false), 'up');
+  assert.equal(core.remoteAction('MediaFastForward', 417, false), 'seek-forward');
+  assert.equal(core.remoteAction('MediaRewind', 412, false), 'seek-back');
+});
+
 test('builds guide rows with explicit unavailable data instead of invented programs', function () {
   const now = 10000;
   const channels = [

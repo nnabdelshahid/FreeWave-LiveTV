@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install test dependencies
+        run: npm ci
+
       - name: Install webOS CLI
         run: npm install --global @webos-tools/cli
 

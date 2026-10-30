@@ -351,9 +351,12 @@
 
   const KEY_NAMES = {
     ArrowLeft: 'left', ArrowUp: 'up', ArrowRight: 'right', ArrowDown: 'down',
-    Enter: 'select', Escape: 'back', Backspace: 'back',
+    Left: 'left', Up: 'up', Right: 'right', Down: 'down',
+    Enter: 'select', OK: 'select', Select: 'select', Return: 'select',
+    Escape: 'back', Backspace: 'back', GoBack: 'back', Back: 'back', Exit: 'back', XF86Back: 'back',
     ChannelUp: 'channel-up', ChannelDown: 'channel-down', PageUp: 'channel-up', PageDown: 'channel-down',
     MediaPlay: 'play', MediaPlayPause: 'play', MediaPause: 'pause', MediaStop: 'stop',
+    MediaFastForward: 'seek-forward', MediaRewind: 'seek-back',
     ColorF1: 'all', ColorF2: 'favorites', ColorF3: 'favorite', ColorF4: 'settings',
     Info: 'info', Guide: 'guide'
   };

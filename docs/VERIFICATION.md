@@ -191,3 +191,91 @@ conclusion: failure
 No job step executed, so this is not a source or test failure. `githubstatus.com` reported “All Systems Operational” and “Actions: operational”; the repository reports `actions/permissions.enabled = true` and `allowed_actions = all`. The failure is an account/runner-start restriction that cannot be fixed from repository code. The equivalent local pipeline (`lint` → lineup build → package → 37 tests → `check:ipk`) passed, and the release artifact was verified manually.
 
 Pull request #1 (https://github.com/nnabdelshahid/FreeWave-LiveTV/pull/1) was opened and reviewed, then **closed unmerged** because its required CI checks cannot start. The correction was applied directly to `main` as documentation. Resolving the Actions runner restriction and re-running CI is the remaining step.
+
+# 1.2.0 remote-control verification — 2026-10-30
+
+This section records the release-blocking remote-control repair separately from the 1.1.0 playback baseline above.
+
+## 11. Reproduction on the installed 1.1.0 build
+
+Before changing code, the installed app was driven through `ares-inspect` with Chromium `Input.dispatchKeyEvent`:
+
+| Probe | Observed |
+| --- | --- |
+| Launch focus | `BODY`, `outline: none 0px` |
+| First ArrowDown | jumped to `guideButton` in the top bar |
+| Settings open | focus `playlistUrl`; ArrowDown left focus on `playlistUrl` (field trap) |
+| Back from Settings | dialog closed, focus returned to `BODY` |
+| Guide open/close | guide row focused; Back returned to the selected channel row |
+| OK on a channel | stream started; native Chromium activation worked |
+
+This isolated four app defects: no deterministic launch focus, focus styling that did not reliably apply to remote/programmatic focus, a text-field D-pad trap, and mixed Back models. It did not prove that the TV fails to deliver key events; the same Chromium input reached the 1.1.0 app.
+
+## 12. Automated checks
+
+```text
+npm run lint
+Lint passed: 12 JavaScript files and 2 JSON files checked.
+
+npm test
+ℹ tests 48
+ℹ pass 48
+ℹ fail 0
+```
+
+The nine new jsdom tests build `app/index.html`, stub TV focus geometry and media, dispatch key events, and assert launch focus, D-pad movement, OK playback, focus survival across channel rebuilds, player-control activation, Back restoration without `pushState`, Setup field escape, Guide navigation, pointer selection, diagnostics, and platform exit.
+
+## 13. Final package
+
+```text
+IPK: com.nader.freewavelive_1.2.0_all.ipk
+Size: 34772 bytes
+Control: Package com.nader.freewavelive · Version 1.2.0 · Architecture all
+App: FreeWave Live TV · id com.nader.freewavelive · version 1.2.0 · 1280x720
+Files: 18 entries
+SHA-256: 1b1421a8039de067c830c36a04f372cedd0a763cbe1644c299d4ee1a2f058e9f
+Package verification passed.
+```
+
+`ares-install -d "Office TV" com.nader.freewavelive_1.2.0_all.ipk` returned `Success`; the launched app reported `v1.2.0`.
+
+## 14. Remote evidence on the TV
+
+All key events below were dispatched into the running TV app through its real DevTools session. `key: "Unidentified"` plus the raw `windowsVirtualKeyCode` was used for the D-pad/OK/Back/color/channel checks, which is the harder case than Chromium's named keys.
+
+| Check | Observed on the LG 24LQ520S-PU |
+| --- | --- |
+| Launch focus | `BUTTON.channel-row.focusable.selected`, `outline: solid 3px` |
+| Raw ArrowDown 40 | focus moved CGTN English → DW English |
+| Raw Enter 13 | DW English selected; `currentChannelName` updated; `readyState 4`; video 480×270; playing |
+| Blue 406 | Setup opened; focus `playlistUrl`; 3 px ring |
+| Down 40 in Setup | focus left `playlistUrl` and landed on `playlistText` |
+| Back 461 in Setup | Setup closed; focus returned to the selected channel row |
+| Info 457 | Guide opened; focus `guide-row`; 3 px ring |
+| Back 461 in Guide | Guide closed; focus returned to the selected channel row |
+| Yellow 405 | favorite count changed 1 → 2; repeated press removed it |
+| Right 39 | focus entered `prevButton`, then `playToggle` |
+| Enter 13 on `playToggle` | paused: `paused: true`; label changed `PAUSE` → `PLAY` |
+| Enter 13 again | resumed: `paused: false`; label `PLAY` → `PAUSE` |
+| ChannelDown 428 / ChannelUp 427 | CNA → CBS News 24/7 → CNA |
+| Magic Remote pointer click | DW Arabic focused and started; 480×270, playing |
+| Diagnostics overlay | key `ArrowDown (40)`, action `down`, handled `YES`, screen `settings`, previous `home`, channel `DW Arabic` |
+| Runtime exceptions | 0 |
+
+Final pass report: `.work/device-remote-report.json`; player pass: `.work/device-player-report.json`. Both are excluded from Git by `.gitignore`; the evidence is summarized here.
+
+### Physical remote — NOT TESTED
+
+The agent cannot actuate the physical LG remote. The device-level input path is verified, but human button presses remain **NOT TESTED**. The acceptance checklist in [REMOTE-CONTROL.md](REMOTE-CONTROL.md) is the exact manual test to run.
+
+## 15. Screenshots
+
+Captured from the running TV app through DevTools. The hardware video plane is not composited, so white areas are the video surface, not a UI failure.
+
+| File | Contents |
+| --- | --- |
+| `07-remote-launch.png` | Launch focus ring on CGTN English, 3 px outline |
+| `08-remote-settings.png` | Setup with field focus after Down |
+| `09-remote-guide.png` | Guide row focus, imported XMLTV and unavailable rows |
+| `10-remote-diagnostics.png` | Diagnostics overlay with key, action, handled, focus, screen, channel |
+| `11-remote-player-pause.png` | Paused stream and focused Play control (`PLAY` label) |

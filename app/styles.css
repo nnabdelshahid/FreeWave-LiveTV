@@ -279,7 +279,49 @@ h1 { margin: 5px 0 2px; font-size: 25px; font-weight: 650; letter-spacing: -.03e
 .dialog-footer > span { max-width: 580px; color: #788d9e; font-size: 9px; line-height: 1.4; }
 
 .toast { position: fixed; z-index: 30; right: 22px; bottom: 19px; max-width: 400px; padding: 10px 14px; border: 1px solid rgba(107, 233, 203, .24); border-radius: 8px; background: rgba(10, 27, 37, .96); color: #d7f8ee; font-size: 11px; box-shadow: 0 9px 24px rgba(0,0,0,.3); }
-.focusable:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; box-shadow: 0 0 0 4px rgba(107, 233, 203, .13); }
+.focusable { scroll-margin: 18px; }
+
+.focusable:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+[tabindex="0"]:focus {
+  outline: 3px solid var(--mint);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(107, 233, 203, .16);
+}
+
+.channel-row:focus,
+.guide-row:focus,
+.player-control:focus,
+.nav-item:focus,
+.top-action:focus {
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 3px var(--mint), 0 0 18px rgba(107, 233, 203, .22);
+}
+
+.channel-row:focus .channel-name { color: #fff; }
+.text-field:focus { outline-offset: 0; }
+
+.diag-overlay {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 50;
+  width: 360px;
+  padding: 9px 12px;
+  border: 1px solid rgba(107, 233, 203, .45);
+  border-radius: 8px;
+  background: rgba(3, 12, 21, .95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  color: #d7f8ee;
+  font: 10px/1.6 Consolas, "Courier New", monospace;
+  pointer-events: none;
+}
+
+.diag-overlay .diag-heading { margin-bottom: 4px; color: var(--mint); font-weight: 700; letter-spacing: .08em; }
+.diag-overlay div span { color: var(--white); }
 button:active { transform: scale(.985); }
 
 @media (min-width: 1450px) {

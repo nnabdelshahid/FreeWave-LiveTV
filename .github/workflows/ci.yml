@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install webOS CLI
+        run: npm install --global @webos-tools/cli
+
+      - name: Lint and metadata checks
+        run: npm run lint
+
+      - name: Build generated lineup
+        run: npm run build:lineup
+
+      - name: Verify generated files are committed
+        run: git diff --exit-code -- app/default-playlist.js app/data/public-channels.m3u
+
+      - name: Package IPK
+        run: npm run package
+
+      - name: Run tests
+        run: npm test
+
+      - name: Verify IPK contents
+        run: npm run check:ipk
+
+      - name: Upload IPK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: freewave-ipk
+          path: com.nader.freewavelive_*_all.ipk
+          if-no-files-found: error

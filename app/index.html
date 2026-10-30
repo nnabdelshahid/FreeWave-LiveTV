@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#08111d">
+  <title>FreeWave Live TV</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup" aria-label="FreeWave Live TV">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">FREEWAVE</span>
+        <span class="brand-divider"></span>
+        <span class="brand-subtitle">LIVE TV</span>
+      </div>
+      <div class="topbar-right">
+        <div id="networkStatus" class="net-status"><span class="net-dot"></span><span id="networkLabel">CHECKING</span></div>
+        <div class="clock-block"><span class="clock-dot"></span><span id="clockLabel">LOCAL TIME</span></div>
+        <button class="top-action focusable" id="guideButton" type="button" aria-label="Show TV guide"><span class="action-icon">▤</span><span>GUIDE</span></button>
+        <button class="top-action focusable" id="settingsButton" type="button" aria-label="Open settings"><span class="action-icon">⚙</span><span>SETUP</span></button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <nav class="sidebar" aria-label="Channel categories">
+        <div class="nav-label">BROWSE</div>
+        <button class="nav-item focusable active" type="button" data-view="all"><span class="nav-symbol">▦</span><span>All channels</span><span id="allCount" class="nav-count">0</span></button>
+        <button class="nav-item focusable" type="button" data-view="favorites"><span class="nav-symbol">★</span><span>Favorites</span><span id="favoriteCount" class="nav-count">0</span></button>
+        <button class="nav-item focusable" type="button" data-view="recent"><span class="nav-symbol">↺</span><span>Recently watched</span><span id="recentCount" class="nav-count">0</span></button>
+        <div class="nav-label category-label">CATEGORIES</div>
+        <div id="categoryNav" class="category-nav"></div>
+        <div class="sidebar-spacer"></div>
+        <div class="source-badge"><span class="source-badge-dot"></span><span>FREE &amp; PUBLIC SOURCES</span></div>
+        <button class="nav-item settings-nav focusable" id="settingsSidebarButton" type="button"><span class="nav-symbol">⚙</span><span>Playlists &amp; guide</span></button>
+      </nav>
+
+      <main class="channel-panel" aria-label="Channels">
+        <div class="panel-heading">
+          <div class="heading-copy">
+            <div class="eyebrow">YOUR CHANNELS</div>
+            <h1 id="sectionTitle">Live TV</h1>
+            <div id="channelCount" class="subheading">Free public streams</div>
+          </div>
+          <div class="search-wrap"><span class="search-icon">⌕</span><input id="channelSearch" class="focusable" type="search" placeholder="Find a channel" aria-label="Find a channel" autocomplete="off"></div>
+        </div>
+        <div id="channelList" class="channel-list" role="listbox" aria-label="Available live channels"></div>
+        <div id="emptyState" class="empty-state" hidden>
+          <div class="empty-orbit"><span>＋</span></div>
+          <h2>No channels in this view</h2>
+          <p>Add a free, authorized public playlist, or change the category.</p>
+          <button id="addPlaylistButton" class="primary-button focusable" type="button">ADD A PLAYLIST</button>
+        </div>
+      </main>
+
+      <section class="player-panel" aria-label="Live player and program guide">
+        <div class="player-frame" id="playerFrame">
+          <video id="video" playsinline preload="none" aria-label="Live TV player"></video>
+          <div id="playerPlaceholder" class="player-placeholder">
+            <div class="placeholder-rings"><span></span><span></span><span></span></div>
+            <div class="placeholder-title">SELECT A CHANNEL</div>
+            <div class="placeholder-copy">Choose a free public stream from the list</div>
+          </div>
+          <div class="player-topline"><span class="live-indicator"><i></i> LIVE</span><span id="channelNumber" class="channel-number">FREE TV</span></div>
+          <div id="playbackMessage" class="playback-message" hidden></div>
+        </div>
+
+        <div class="player-controls" aria-label="Playback controls">
+          <button class="player-control focusable" id="prevButton" type="button" aria-label="Previous channel">‹ <span>PREV</span></button>
+          <button class="player-control focusable" id="playToggle" type="button" aria-label="Play or pause">▶ <span>PLAY</span></button>
+          <button class="player-control focusable" id="nextButton" type="button" aria-label="Next channel">› <span>NEXT</span></button>
+          <button class="player-control focusable" id="muteToggle" type="button" aria-label="Mute or unmute">◖ <span>SOUND</span></button>
+          <div class="control-spacer"></div>
+          <button class="player-control favorite-control focusable" id="favoriteToggle" type="button" aria-label="Add to favorites">☆ <span>FAVORITE</span></button>
+          <button class="player-control focusable" id="reloadButton" type="button" aria-label="Reconnect to channel">↻ <span>RECONNECT</span></button>
+        </div>
+
+        <div id="nowCard" class="now-card" tabindex="0" aria-label="Current and next program guide">
+          <div class="now-topline"><span class="now-label"><span class="now-dot"></span> NOW PLAYING</span><span id="localNow" class="local-now"></span></div>
+          <div class="current-channel-row">
+            <div id="channelLogo" class="channel-logo"><span>TV</span></div>
+            <div class="channel-titles"><div id="currentChannelName" class="current-channel-name">Welcome to FreeWave</div><div id="currentChannelMeta" class="current-channel-meta">Free public TV, ready when you are</div></div>
+          </div>
+          <div class="program-block">
+            <div id="programTitle" class="program-title">Add a guide to see what’s on</div>
+            <div class="progress-track"><div id="programProgress" class="progress-fill" style="width:0%"></div></div>
+            <div class="program-times"><span id="programTime">XMLTV guide not connected</span><span id="programRemaining"></span></div>
+          </div>
+          <div class="next-program-row"><span class="next-label">UP NEXT</span><span id="nextProgram" class="next-program">Connect an XMLTV guide in Setup</span></div>
+        </div>
+
+        <div class="remote-hint"><span class="hint-key">←</span><span class="hint-key">↑</span><span class="hint-key">↓</span><span class="hint-key">→</span><span>MOVE</span><span class="hint-separator">·</span><span class="hint-key ok-key">OK</span><span>SELECT</span><span class="hint-separator">·</span><span class="hint-key yellow-key">Y</span><span>FAVORITE</span><span class="hint-separator">·</span><span class="hint-key">i</span><span>GUIDE</span></div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </div>
+
+  <div id="settingsModal" class="modal" hidden aria-modal="true" role="dialog" aria-labelledby="settingsTitle">
+    <div class="dialog">
+      <header class="dialog-header">
+        <div><div class="eyebrow">PERSONALIZE YOUR LINEUP</div><h2 id="settingsTitle">Playlists &amp; guide</h2><p>Bring free streams from official broadcasters and public channels.</p></div>
+        <button id="closeSettings" class="close-button focusable" type="button" aria-label="Close setup">×</button>
+      </header>
+      <div class="dialog-content">
+        <section class="settings-section">
+          <div class="section-title-row"><span class="section-step">01</span><div><h3>Channel playlist</h3><p>Use an M3U/M3U8 file, URL, or paste its contents.</p></div></div>
+          <label class="field-label" for="playlistUrl">Playlist URL</label>
+          <div class="inline-fields"><input id="playlistUrl" class="text-field focusable" type="url" placeholder="https://broadcaster.example/channels.m3u" autocomplete="off"><button id="importPlaylistUrl" class="secondary-button focusable" type="button">LOAD URL</button></div>
+          <label class="field-label" for="playlistText">Or paste M3U text</label>
+          <textarea id="playlistText" class="text-field text-area focusable" rows="4" placeholder="#EXTM3U&#10;#EXTINF:-1 group-title=&quot;News&quot;,Example Public Channel&#10;https://official.example/live.m3u8"></textarea>
+          <div class="inline-fields bottom-fields"><input id="playlistFile" class="file-field focusable" type="file" accept=".m3u,.m3u8,.txt,text/plain,application/vnd.apple.mpegurl" aria-label="Choose an M3U playlist file"><button id="importPlaylistText" class="secondary-button focusable" type="button">ADD PASTED LIST</button></div>
+          <div id="playlistFeedback" class="field-feedback" role="status"></div>
+          <div id="sourceList" class="source-list"></div>
+        </section>
+
+        <section class="settings-section epg-section">
+          <div class="section-title-row"><span class="section-step">02</span><div><h3>Program guide</h3><p>Optional XMLTV schedule. Channel IDs should match each playlist’s <code>tvg-id</code>.</p></div></div>
+          <label class="field-label" for="epgUrl">XMLTV URL</label>
+          <div class="inline-fields"><input id="epgUrl" class="text-field focusable" type="url" placeholder="https://example.org/guide.xml" autocomplete="off"><button id="loadEpgUrl" class="secondary-button focusable" type="button">LOAD GUIDE</button></div>
+          <label class="field-label" for="epgText">Or paste XMLTV</label>
+          <textarea id="epgText" class="text-field text-area focusable epg-area" rows="3" placeholder="&lt;tv&gt; ... &lt;/tv&gt;"></textarea>
+          <div class="inline-fields bottom-fields"><input id="epgFile" class="file-field focusable" type="file" accept=".xml,.xmltv,.txt,text/xml,application/xml" aria-label="Choose an XMLTV guide file"><button id="importEpgText" class="secondary-button focusable" type="button">ADD PASTED GUIDE</button></div>
+          <div id="epgFeedback" class="field-feedback" role="status"></div>
+        </section>
+
+        <section class="settings-section">
+          <div class="section-title-row"><span class="section-step">03</span><div><h3>Playback preferences</h3><p>These settings stay on this TV only.</p></div></div>
+          <label class="toggle-row focusable" for="prefResume"><input id="prefResume" type="checkbox"><span>Resume the last channel on launch</span></label>
+          <label class="toggle-row focusable" for="prefMuted"><input id="prefMuted" type="checkbox"><span>Start with sound muted</span></label>
+          <label class="field-label" for="prefRetries">Automatic reconnect attempts</label>
+          <select id="prefRetries" class="text-field select-field focusable">
+            <option value="0">None</option>
+            <option value="1">1 attempt</option>
+            <option value="2">2 attempts</option>
+            <option value="3">3 attempts</option>
+          </select>
+          <div class="inline-fields bottom-fields">
+            <button id="refreshGuideButton" class="secondary-button focusable" type="button">REFRESH GUIDE</button>
+            <button id="clearFavoritesButton" class="secondary-button focusable" type="button">CLEAR FAVORITES</button>
+          </div>
+          <div id="prefsFeedback" class="field-feedback" role="status"></div>
+        </section>
+
+        <section class="settings-section">
+          <div class="section-title-row"><span class="section-step">04</span><div><h3>Diagnostics</h3><p>Local status. Nothing is sent anywhere.</p></div></div>
+          <div id="diagList" class="diag-list"></div>
+          <div class="inline-fields bottom-fields">
+            <button id="runStreamCheck" class="secondary-button focusable" type="button">CHECK CURRENT STREAM</button>
+          </div>
+          <div id="diagFeedback" class="field-feedback" role="status"></div>
+        </section>
+      </div>
+      <footer class="dialog-footer"><span>Use free, authorized streams from their broadcasters. Premium cable access and DRM workarounds are not supported.</span><span id="appVersion" class="app-version">v1.1.0</span><button id="doneSettings" class="primary-button focusable" type="button">DONE</button></footer>
+    </div>
+  </div>
+
+  <div id="guideModal" class="modal" hidden aria-modal="true" role="dialog" aria-labelledby="guideTitle">
+    <div class="dialog guide-dialog">
+      <header class="dialog-header">
+        <div><div class="eyebrow">PROGRAM SCHEDULE</div><h2 id="guideTitle">TV Guide</h2><p>Times use this TV’s local timezone. Guide data comes only from the XMLTV source you load.</p></div>
+        <button id="closeGuide" class="close-button focusable" type="button" aria-label="Close guide">×</button>
+      </header>
+      <div class="guide-content">
+        <div id="guideStatus" class="guide-status"></div>
+        <div id="guideList" class="guide-list" role="listbox" aria-label="Channels and programs"></div>
+        <div id="guideDetail" class="guide-detail">Select a channel to see its guide entries.</div>
+      </div>
+      <footer class="dialog-footer"><span>Unlisted programs are shown as unavailable, never invented.</span><button id="guideSetupButton" class="secondary-button focusable" type="button">GUIDE SETUP</button><button id="doneGuide" class="primary-button focusable" type="button">CLOSE</button></footer>
+    </div>
+  </div>
+
+  <script src="js/core.js"></script>
+  <script src="default-playlist.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

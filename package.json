@@ -13,7 +13,8 @@
     "verify:streams": "node scripts/verify-streams.js",
     "package": "node scripts/build-lineup.js && ares-package app -o .",
     "check:ipk": "node scripts/check-ipk.js",
-    "ci": "npm run lint && npm test && npm run build:lineup && npm run package && npm run check:ipk"
+    "verify:generated": "git diff --exit-code -- app/default-playlist.js app/data/public-channels.m3u",
+    "ci": "npm run lint && npm test && npm run build:lineup && npm run verify:generated && npm run package && npm run check:ipk"
   },
   "devDependencies": {
     "jsdom": "^26.1.0"

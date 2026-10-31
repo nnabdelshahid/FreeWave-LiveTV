@@ -11,6 +11,7 @@
   "resolution": "1280x720",
   "bgColor": "#08111d",
   "requiredMemory": 20,
+  "requiredACG": [],
   "disableBackHistoryAPI": true,
   "supportTouchMode": "virtual"
 }
